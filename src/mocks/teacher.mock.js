@@ -249,13 +249,68 @@ export function getTeacherGradesSummary(courseCode, section, catalog = coursesBy
     };
   });
 }
-// Rooms (unchanged)
+// Rooms
 export const rooms = [
   { id: 'room1', name: 'Laboratorio 1', capacity: 30 },
-  { id: 'room2', name: 'Sala de Conferencias', capacity: 50 },
-  { id: 'room3', name: 'Aula Magna', capacity: 100 },
+  { id: 'room2', name: 'Aula 302', capacity: 50 },
+  { id: 'room3', name: 'Aula 101', capacity: 50 },
 ];
-// API-like functions for mocks
+
+
+// --- Mock de reservas de ambientes ---
+const roomReservations = []; 
+// Estructura: { id, roomId, date, startTime, endTime, reason, createdAt, teacherId }
+
+function timeToMinutes(t) {
+  // t = "HH:MM"
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+}
+
+export function reserveRoom({ roomId, date, startTime, endTime, reason, teacherId = teacherProfile.id }) {
+  if (!roomId || !date || !startTime || !endTime) {
+    throw new Error("roomId, date, startTime y endTime son obligatorios");
+  }
+  const start = timeToMinutes(startTime);
+  const end = timeToMinutes(endTime);
+  if (end <= start) throw new Error("El horario de fin debe ser mayor al inicio");
+
+  // Conflictos: misma sala + misma fecha + solapes de horario
+  const conflict = roomReservations.find(r =>
+    r.roomId === roomId &&
+    r.date === date &&
+    !(timeToMinutes(r.endTime) <= start || timeToMinutes(r.startTime) >= end)
+  );
+  if (conflict) {
+    throw new Error("Conflicto: el ambiente ya está reservado en ese horario");
+  }
+
+  const id = `res-${roomId}-${Date.now()}`;
+  roomReservations.push({
+    id, roomId, date, startTime, endTime,
+    reason: reason ?? "",
+    createdAt: new Date().toISOString(),
+    teacherId,
+  });
+  return id;
+}
+
+export function listRoomReservations({ roomId, date } = {}) {
+  return roomReservations.filter(r =>
+    (!roomId || r.roomId === roomId) &&
+    (!date || r.date === date)
+  );
+}
+
+// Exponer funciones mock asíncronas
+export async function mockReserveRoom(payload) { 
+  return reserveRoom(payload); 
+}
+export async function mockListRoomReservations(filter) { 
+  return structuredClone(listRoomReservations(filter)); 
+}
+
+
 export async function mockGetTeacherProfile() {
   return structuredClone(teacherProfile);
 }

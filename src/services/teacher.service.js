@@ -1,6 +1,5 @@
 // Servicio para operaciones relacionadas al docente.
-// Esta clase abstrae el origen de los datos (mock o API real).
-
+// src/services/teacher.service.js
 import {
   mockGetTeacherProfile,
   mockGetTeacherSchedule,
@@ -8,12 +7,14 @@ import {
   mockOpenAttendanceSession,
   mockMarkAttendance,
   mockCloseAttendanceSession,
-  mockListAttendanceSessions,
   mockGetTeacherGradesSummary,
   mockSetTeacherGrade,
   mockSetTeacherSubstitutive,
   rooms as mockRooms,
+  mockReserveRoom,
+  mockListRoomReservations,
 } from '../mocks/teacher.mock';
+
 
 // Determina si se debe utilizar datos simulados. Por defecto se usan mocks
 // salvo que la variable de entorno VITE_USE_MOCK_DATA sea explícitamente
@@ -51,10 +52,19 @@ class TeacherService {
     throw new Error('API real no implementada');
   }
 
+  async reserveRoom(payload) {
+    // payload: { roomId, date: 'YYYY-MM-DD', startTime: 'HH:MM', endTime: 'HH:MM', reason?: string }
+    if (USE_MOCK) return await mockReserveRoom(payload);
+    throw new Error('API real no implementada');
+  }
+
+  async getRoomReservations(filter) {
+    // filter opcional: { roomId?, date? }
+    if (USE_MOCK) return await mockListRoomReservations(filter);
+    throw new Error('API real no implementada');
+  }
+
   async listAttendanceSessions(courseCode, section) {
-    // Devuelve todas las sesiones de asistencia filtradas opcionalmente por
-    // curso y sección. Este método es útil para mostrar un resumen de las
-    // asistencias ya tomadas.
     if (USE_MOCK) return await mockListAttendanceSessions({ courseCode, section });
     throw new Error('API real no implementada');
   }
