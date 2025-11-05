@@ -25,8 +25,10 @@ const TeacherDashboard = () => {
     error: gradesError,
   } = useQuery({
     queryKey: ['teacher-grades'],
-    queryFn: () => TeacherService.getGrades(),
+    queryFn: () => TeacherService.getGradesSummary(),
   });
+
+  console.log(grades)
 
   if (scheduleLoading || gradesLoading) {
     return <LoadingSpinner message="Cargando dashboard..." />;

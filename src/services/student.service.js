@@ -1,50 +1,42 @@
-import axiosClient from '../api/axiosClient';
-import ENDPOINTS from '../api/endpoints';
+// src/services/student.service.js
+
 import {
-  mockGetSchedule,
-  mockGetGrades,
-  mockGetLabs,
-  mockEnrollLab,
+  mockGetStudentProfile,
+  mockGetStudentSchedule,
+  mockGetStudentGrades,
+  mockGetAvailableLabs,
 } from '../mocks/student.mock';
 
-// Por defecto utilizamos los mocks si la variable no está explícitamente en 'false'
 const USE_MOCK = import.meta.env.VITE_USE_MOCK_DATA !== 'false';
 
 class StudentService {
-  /** Obtener horario del estudiante */
+  async getProfile() {
+    if (USE_MOCK) {
+      return await mockGetStudentProfile();
+    }
+    // Aquí iría la llamada real al backend (ej. axios.get('/students/me'))
+    throw new Error('API real no implementada');
+  }
+
   async getSchedule() {
     if (USE_MOCK) {
-      return mockGetSchedule();
+      return await mockGetStudentSchedule();
     }
-    const res = await axiosClient.get(ENDPOINTS.STUDENT.SCHEDULE);
-    return res.data;
+    throw new Error('API real no implementada');
   }
 
-  /** Obtener notas del estudiante */
   async getGrades() {
     if (USE_MOCK) {
-      return mockGetGrades();
+      return await mockGetStudentGrades();
     }
-    const res = await axiosClient.get(ENDPOINTS.STUDENT.GRADES);
-    return res.data;
+    throw new Error('API real no implementada');
   }
 
-  /** Obtener lista de laboratorios disponibles */
-  async getLabs() {
+  async getAvailableLabs() {
     if (USE_MOCK) {
-      return mockGetLabs();
+      return await mockGetAvailableLabs();
     }
-    const res = await axiosClient.get(ENDPOINTS.STUDENT.LABS);
-    return res.data;
-  }
-
-  /** Inscribir al estudiante en un laboratorio */
-  async enrollLab(labId) {
-    if (USE_MOCK) {
-      return mockEnrollLab(labId);
-    }
-    const res = await axiosClient.post(ENDPOINTS.STUDENT.ENROLL, { labId });
-    return res.data;
+    throw new Error('API real no implementada');
   }
 }
 

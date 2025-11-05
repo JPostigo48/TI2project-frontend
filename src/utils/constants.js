@@ -6,6 +6,7 @@ export const ROLES = {
 };
 
 export const ROUTES = {
+  HOME: '/',
   LOGIN: '/login',
   // Rutas de estudiante
   STUDENT_DASHBOARD: '/estudiante',
@@ -22,11 +23,9 @@ export const ROUTES = {
 
 // Días de la semana en español para ordenar horarios
 export const DAYS = {
-  MONDAY: 'Lunes',
-  TUESDAY: 'Martes',
-  WEDNESDAY: 'Miércoles',
-  THURSDAY: 'Jueves',
-  FRIDAY: 'Viernes',
-  SATURDAY: 'Sábado',
-  SUNDAY: 'Domingo',
+  Monday: 'Lunes',
+  Tuesday: 'Martes',
+  Wednesday: 'Miércoles',
+  Thursday: 'Jueves',
+  Friday: 'Viernes',
 };

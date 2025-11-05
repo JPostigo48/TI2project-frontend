@@ -1,116 +1,139 @@
+// src/pages/teacher/GradeManagement.jsx
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import TeacherService from '../../services/teacher.service';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import ErrorMessage from '../../components/shared/ErrorMessage';
-import { calculateStats } from '../../utils/helpers';
 
-/**
- * Página de gestión de notas para el docente.
- * Permite visualizar las notas de los estudiantes, editar puntajes y ver estadísticas.
- */
 const GradeManagement = () => {
-  const queryClient = useQueryClient();
-  const {
-    data: grades = [],
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['teacher-grades'],
-    queryFn: () => TeacherService.getGrades(),
+  const [courseCode, setCourseCode] = useState('');
+  const [section, setSection] = useState('');
+  const qc = useQueryClient();
+
+  // Cargar horario para extraer cursos/sections
+  const { data: schedule, isLoading: loadingSchedule, error: errorSchedule } = useQuery({
+    queryKey: ['teacherSchedule'],
+    queryFn: () => TeacherService.getSchedule(),
   });
 
-  const [editValues, setEditValues] = useState({});
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, score }) => TeacherService.updateGrade(id, score),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacher-grades'] });
+  // Obtener resumen de notas al seleccionar curso y sección
+  const { data: summary, isLoading: loadingSummary, error: errorSummary } = useQuery({
+    queryKey: ['gradesSummary', courseCode, section],
+    queryFn: () => {
+      if (!courseCode || !section) return [];
+      return TeacherService.getGradesSummary(courseCode, section);
     },
+    enabled: !!courseCode && !!section,
   });
 
-  if (isLoading) {
-    return <LoadingSpinner message="Cargando notas..." />;
-  }
-  if (error) {
-    return <ErrorMessage message={error.message || 'Error al cargar las notas'} />;
-  }
+  const setGrade = useMutation({
+    mutationFn: TeacherService.setGrade,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['gradesSummary', courseCode, section] }),
+  });
+  const setSub = useMutation({
+    mutationFn: TeacherService.setSubstitutive,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['gradesSummary', courseCode, section] }),
+  });
 
-  const scores = grades.map((g) => g.score);
-  const stats = calculateStats(scores);
+  if (loadingSchedule) return <LoadingSpinner message="Cargando datos..." />;
+  if (errorSchedule) return <ErrorMessage message="Error al cargar horario" />;
 
-  const handleInputChange = (id, value) => {
-    setEditValues((prev) => ({ ...prev, [id]: value }));
+  // Extraer cursos únicos de schedule
+  const courses = {};
+  schedule.forEach((b) => {
+    const key = `${b.courseCode}-${b.section}`;
+    if (!courses[key]) courses[key] = { courseCode: b.courseCode, section: b.section };
+  });
+
+  const handleGradeChange = (studentId, partial, kind, value) => {
+    setGrade.mutate({ courseCode, section, studentId, partial, kind, value });
   };
-
-  const handleSave = (id, currentScore) => {
-    const newScore = editValues[id] ?? currentScore;
-    updateMutation.mutate({ id, score: newScore });
+  const handleSubChange = (studentId, value) => {
+    setSub.mutate({ courseCode, section, studentId, value });
   };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800">Gestión de Notas</h1>
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-600 mb-1">Promedio</p>
-          <p className="text-3xl font-bold text-blue-700">{stats.avg}</p>
-        </div>
-        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-sm text-green-600 mb-1">Mayor</p>
-          <p className="text-3xl font-bold text-green-700">{stats.max}</p>
-        </div>
-        <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-          <p className="text-sm text-purple-600 mb-1">Menor</p>
-          <p className="text-3xl font-bold text-purple-700">{stats.min}</p>
-        </div>
+    <div className="animate-fade-in space-y-4">
+      <h1 className="text-xl font-semibold">Gestión de Notas</h1>
+      <div className="flex gap-4">
+        <select
+          className="border rounded p-2"
+          value={`${courseCode}-${section}`}
+          onChange={(e) => {
+            const [c, s] = e.target.value.split('-');
+            setCourseCode(c);
+            setSection(s);
+          }}
+        >
+          <option value="">Seleccione curso</option>
+          {Object.values(courses).map((c) => (
+            <option key={`${c.courseCode}-${c.section}`} value={`${c.courseCode}-${c.section}`}>
+              {c.courseCode} - Sección {c.section}
+            </option>
+          ))}
+        </select>
       </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-2 text-left text-gray-600">Estudiante</th>
-              <th className="px-4 py-2 text-left text-gray-600">Evaluación</th>
-              <th className="px-4 py-2 text-left text-gray-600">Puntaje</th>
-              <th className="px-4 py-2 text-left text-gray-600"></th>
+
+      {loadingSummary && courseCode && section && <LoadingSpinner message="Cargando notas..." />}
+      {errorSummary && <ErrorMessage message="Error al cargar notas" />}
+
+      {summary && summary.length > 0 && (
+        <table className="w-full border divide-y divide-gray-200">
+          <thead>
+            <tr className="bg-gray-100 text-sm">
+              <th className="p-2">Alumno</th>
+              <th className="p-2">P1 Cont.</th>
+              <th className="p-2">P1 Exam.</th>
+              <th className="p-2">P2 Cont.</th>
+              <th className="p-2">P2 Exam.</th>
+              <th className="p-2">P3 Cont.</th>
+              <th className="p-2">P3 Exam.</th>
+              <th className="p-2">Sustit.</th>
+              <th className="p-2">Final</th>
             </tr>
           </thead>
           <tbody>
-            {grades.map((grade) => (
-              <tr key={grade.id} className="border-t">
-                <td className="px-4 py-2">{grade.student}</td>
-                <td className="px-4 py-2">{grade.evaluation}</td>
-                <td className="px-4 py-2">
+            {summary.map((row) => (
+              <tr key={row.studentId} className="text-sm hover:bg-gray-50">
+                <td className="p-2 font-medium">{row.studentName}</td>
+                {['P1', 'P2', 'P3'].map((partial) => (
+                  <React.Fragment key={partial}>
+                    <td className="p-1">
+                      <input
+                        type="number"
+                        className="w-16 border rounded p-1"
+                        defaultValue={row.partials[partial].continuous}
+                        onBlur={(e) => handleGradeChange(row.studentId, partial, 'continuous', e.target.value)}
+                      />
+                    </td>
+                    <td className="p-1">
+                      <input
+                        type="number"
+                        className="w-16 border rounded p-1"
+                        defaultValue={row.partials[partial].exam}
+                        onBlur={(e) => handleGradeChange(row.studentId, partial, 'exam', e.target.value)}
+                      />
+                    </td>
+                  </React.Fragment>
+                ))}
+                <td className="p-1">
                   <input
                     type="number"
-                    min="0"
-                    max="20"
-                    defaultValue={grade.score}
-                    onChange={(e) => handleInputChange(grade.id, e.target.value)}
-                    className="border rounded px-2 py-1 w-20 text-center"
+                    className="w-16 border rounded p-1"
+                    defaultValue={row.substitutive ?? ''}
+                    onBlur={(e) => {
+                      const v = e.target.value === '' ? null : Number(e.target.value);
+                      handleSubChange(row.studentId, v);
+                    }}
                   />
                 </td>
-                <td className="px-4 py-2">
-                  <button
-                    onClick={() => handleSave(grade.id, grade.score)}
-                    disabled={updateMutation.isLoading}
-                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-400"
-                  >
-                    {updateMutation.isLoading ? 'Guardando...' : 'Guardar'}
-                  </button>
+                <td className="p-2 font-semibold">
+                  {row.computed.finalScore?.toFixed(2)}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
-      {updateMutation.isSuccess && (
-        <p className="text-green-600 mt-2">¡Nota actualizada correctamente!</p>
-      )}
-      {updateMutation.isError && (
-        <p className="text-red-600 mt-2">
-          {updateMutation.error?.message || 'Error al actualizar nota'}
-        </p>
       )}
     </div>
   );

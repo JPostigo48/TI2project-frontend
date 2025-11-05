@@ -1,66 +1,69 @@
-import axiosClient from '../api/axiosClient';
-import ENDPOINTS from '../api/endpoints';
+// src/services/teacher.service.js
+
 import {
-  mockGetAttendanceList,
-  mockSubmitAttendance,
+  mockGetTeacherProfile,
   mockGetTeacherSchedule,
-  mockGetTeacherGrades,
-  mockUpdateGrade,
-  mockGetRooms,
-  mockReserveRoom,
+  mockGetTeacherRoster,
+  mockOpenAttendanceSession,
+  mockMarkAttendance,
+  mockCloseAttendanceSession,
+  mockGetTeacherGradesSummary,
+  mockSetTeacherGrade,
+  mockSetTeacherSubstitutive,
+  rooms as mockRooms,
 } from '../mocks/teacher.mock';
 
-// Por defecto utilizamos los mocks si la variable no está explícitamente en 'false'
 const USE_MOCK = import.meta.env.VITE_USE_MOCK_DATA !== 'false';
 
 class TeacherService {
-  /** Obtener lista de estudiantes para tomar asistencia */
-  async getAttendanceList() {
-    if (USE_MOCK) return mockGetAttendanceList();
-    const res = await axiosClient.get(ENDPOINTS.TEACHER.ATTENDANCE_LIST);
-    return res.data;
+  async getProfile() {
+    if (USE_MOCK) return await mockGetTeacherProfile();
+    throw new Error('API real no implementada');
   }
 
-  /** Enviar asistencia */
-  async submitAttendance(payload) {
-    if (USE_MOCK) return mockSubmitAttendance(payload);
-    const res = await axiosClient.post(ENDPOINTS.TEACHER.SUBMIT_ATTENDANCE, payload);
-    return res.data;
-  }
-
-  /** Obtener horario del docente */
   async getSchedule() {
-    if (USE_MOCK) return mockGetTeacherSchedule();
-    const res = await axiosClient.get(ENDPOINTS.TEACHER.SCHEDULE);
-    return res.data;
+    if (USE_MOCK) return await mockGetTeacherSchedule();
+    throw new Error('API real no implementada');
   }
 
-  /** Obtener lista de notas que administra el docente */
-  async getGrades() {
-    if (USE_MOCK) return mockGetTeacherGrades();
-    const res = await axiosClient.get(ENDPOINTS.TEACHER.GRADES);
-    return res.data;
+  async getRoster(courseCode, section) {
+    if (USE_MOCK) return await mockGetTeacherRoster(courseCode, section);
+    throw new Error('API real no implementada');
   }
 
-  /** Actualizar nota */
-  async updateGrade(gradeId, score) {
-    if (USE_MOCK) return mockUpdateGrade(gradeId, score);
-    const res = await axiosClient.put(ENDPOINTS.TEACHER.UPDATE_GRADE, { gradeId, score });
-    return res.data;
+  async openAttendanceSession(payload) {
+    if (USE_MOCK) return await mockOpenAttendanceSession(payload);
+    throw new Error('API real no implementada');
   }
 
-  /** Obtener ambientes disponibles */
+  async markAttendance(payload) {
+    if (USE_MOCK) return await mockMarkAttendance(payload);
+    throw new Error('API real no implementada');
+  }
+
+  async closeAttendanceSession(sessionId) {
+    if (USE_MOCK) return await mockCloseAttendanceSession(sessionId);
+    throw new Error('API real no implementada');
+  }
+
+  async getGradesSummary(courseCode, section) {
+    if (USE_MOCK) return await mockGetTeacherGradesSummary(courseCode, section);
+    throw new Error('API real no implementada');
+  }
+
+  async setGrade(payload) {
+    if (USE_MOCK) return await mockSetTeacherGrade(payload);
+    throw new Error('API real no implementada');
+  }
+
+  async setSubstitutive(payload) {
+    if (USE_MOCK) return await mockSetTeacherSubstitutive(payload);
+    throw new Error('API real no implementada');
+  }
+
   async getRooms() {
-    if (USE_MOCK) return mockGetRooms();
-    const res = await axiosClient.get(ENDPOINTS.TEACHER.ROOMS);
-    return res.data;
-  }
-
-  /** Reservar un ambiente */
-  async reserveRoom(payload) {
-    if (USE_MOCK) return mockReserveRoom(payload);
-    const res = await axiosClient.post(ENDPOINTS.TEACHER.RESERVE_ROOM, payload);
-    return res.data;
+    if (USE_MOCK) return mockRooms;
+    throw new Error('API real no implementada');
   }
 }
 

@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { users } from '../mocks/auth.mock';
+import { ROUTES } from '../utils/constants';
 
 const Login = () => {
   const { login } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -103,6 +106,10 @@ const Login = () => {
               {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </button>
           </form>
+
+          <button className="btn-secondary w-full mt-2" onClick={() => navigate(ROUTES.HOME)}>
+            Volver al inicio
+          </button>
 
           {/* Link de recuperación */}
           <div className="text-center mt-4">

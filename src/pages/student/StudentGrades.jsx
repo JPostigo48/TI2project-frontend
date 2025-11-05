@@ -1,67 +1,62 @@
+// src/pages/student/StudentGrades.jsx
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import StudentService from '../../services/student.service';
-import ErrorMessage from '../../components/shared/ErrorMessage';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
+import ErrorMessage from '../../components/shared/ErrorMessage';
 import { calculateStats } from '../../utils/helpers';
 
 const StudentGrades = () => {
-  const {
-    data: grades = [],
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ['student-grades'],
+  const { data: grades, isLoading, error } = useQuery({
+    queryKey: ['studentGrades'],
     queryFn: () => StudentService.getGrades(),
   });
 
-  if (isLoading) {
-    return <LoadingSpinner message="Cargando notas..." />;
-  }
-  if (error) {
-    return <ErrorMessage message={error.message || 'Error al cargar las notas'} />;
-  }
+  if (isLoading) return <LoadingSpinner message="Cargando notas..." />;
+  if (error) return <ErrorMessage message="Error al cargar notas" />;
 
-  const scores = grades.map((g) => g.score);
-  const stats = calculateStats(scores);
+  // Extraer las notas finales para estadísticas
+  const finals = grades.map(g => g.computed.finalScore ?? 0);
+  const stats = calculateStats(finals);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800">Mis Notas</h1>
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="card bg-green-50 border-green-200">
-          <p className="text-sm text-green-600 mb-1">Promedio</p>
-          <p className="text-3xl font-bold text-green-700">{stats.avg}</p>
-        </div>
-        <div className="card bg-blue-50 border-blue-200">
-          <p className="text-sm text-blue-600 mb-1">Mayor</p>
-          <p className="text-3xl font-bold text-blue-700">{stats.max}</p>
-        </div>
-        <div className="card bg-purple-50 border-purple-200">
-          <p className="text-sm text-purple-600 mb-1">Menor</p>
-          <p className="text-3xl font-bold text-purple-700">{stats.min}</p>
-        </div>
+    <div className="space-y-4 animate-fade-in">
+      <h1 className="text-xl font-semibold">Mis Notas</h1>
+      <div className="flex gap-3">
+        <div className="card">Promedio: {stats.avg}</div>
+        <div className="card">Máxima: {stats.max}</div>
+        <div className="card">Mínima: {stats.min}</div>
       </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-2 text-left text-gray-600">Curso</th>
-              <th className="px-4 py-2 text-left text-gray-600">Evaluación</th>
-              <th className="px-4 py-2 text-left text-gray-600">Puntaje</th>
+      <table className="w-full border divide-y divide-gray-200">
+        <thead>
+          <tr className="bg-gray-100 text-left text-sm">
+            <th className="p-2">Curso</th>
+            <th className="p-2">P1 Cont.</th>
+            <th className="p-2">P1 Exam.</th>
+            <th className="p-2">P2 Cont.</th>
+            <th className="p-2">P2 Exam.</th>
+            <th className="p-2">P3 Cont.</th>
+            <th className="p-2">P3 Exam.</th>
+            <th className="p-2">Sustit.</th>
+            <th className="p-2">Final</th>
+          </tr>
+        </thead>
+        <tbody>
+          {grades.map((g) => (
+            <tr key={g.courseCode} className="text-sm hover:bg-gray-50">
+              <td className="p-2 font-medium">{g.courseName}</td>
+              <td className="p-2">{g.partials.P1?.continuous}</td>
+              <td className="p-2">{g.partials.P1?.exam}</td>
+              <td className="p-2">{g.partials.P2?.continuous}</td>
+              <td className="p-2">{g.partials.P2?.exam}</td>
+              <td className="p-2">{g.partials.P3?.continuous}</td>
+              <td className="p-2">{g.partials.P3?.exam}</td>
+              <td className="p-2">{g.substitutive ?? '-'}</td>
+              <td className="p-2 font-semibold">{g.computed.finalScore?.toFixed(2)}</td>
             </tr>
-          </thead>
-          <tbody>
-            {grades.map((grade) => (
-              <tr key={grade.id} className="border-t">
-                <td className="px-4 py-2">{grade.course}</td>
-                <td className="px-4 py-2">{grade.evaluation}</td>
-                <td className="px-4 py-2">{grade.score}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
