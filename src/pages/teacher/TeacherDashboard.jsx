@@ -1,3 +1,10 @@
+// Panel principal para docentes.
+// Este dashboard muestra un resumen de las actividades del docente:
+// número de cursos/secciones dictados, sesiones de asistencia tomadas,
+// evaluaciones distintas y total de notas registradas. Se actualizó para
+// utilizar un nuevo método que agrupa las notas de todas las asignaciones
+// del docente y para contabilizar las sesiones de asistencia.
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -6,11 +13,8 @@ import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import ErrorMessage from '../../components/shared/ErrorMessage';
 import { ROUTES } from '../../utils/constants';
 
-/**
- * Dashboard principal para docentes.
- * Muestra un resumen de cursos, evaluaciones y enlaces rápidos a módulos clave.
- */
 const TeacherDashboard = () => {
+  // Cargar horario del docente
   const {
     data: schedule = [],
     isLoading: scheduleLoading,
@@ -19,18 +23,26 @@ const TeacherDashboard = () => {
     queryKey: ['teacher-schedule'],
     queryFn: () => TeacherService.getSchedule(),
   });
+  // Cargar resumen de notas de todos los cursos
   const {
-    data: grades = [],
+    data: allGrades = [],
     isLoading: gradesLoading,
     error: gradesError,
   } = useQuery({
-    queryKey: ['teacher-grades'],
-    queryFn: () => TeacherService.getGradesSummary(),
+    queryKey: ['teacher-all-grades'],
+    queryFn: () => TeacherService.getAllGradesSummary(),
+  });
+  // Cargar sesiones de asistencia tomadas (de todos los cursos)
+  const {
+    data: sessions = [],
+    isLoading: sessionsLoading,
+    error: sessionsError,
+  } = useQuery({
+    queryKey: ['teacher-attendance-sessions'],
+    queryFn: () => TeacherService.listAttendanceSessions(),
   });
 
-  console.log(grades)
-
-  if (scheduleLoading || gradesLoading) {
+  if (scheduleLoading || gradesLoading || sessionsLoading) {
     return <LoadingSpinner message="Cargando dashboard..." />;
   }
   if (scheduleError) {
@@ -39,24 +51,54 @@ const TeacherDashboard = () => {
   if (gradesError) {
     return <ErrorMessage message={gradesError.message || 'Error al cargar notas'} />;
   }
+  if (sessionsError) {
+    return <ErrorMessage message={sessionsError.message || 'Error al cargar sesiones'} />;
+  }
 
-  const coursesCount = schedule.length;
-  const evaluations = grades.map((g) => g.evaluation);
-  const uniqueEvaluations = Array.from(new Set(evaluations));
-  const evaluationsCount = uniqueEvaluations.length;
-  const totalGrades = grades.length;
+  // Calcular número de cursos/secciones únicos
+  const uniqueAssignments = new Set();
+  schedule.forEach((b) => {
+    uniqueAssignments.add(`${b.courseCode}-${b.section}`);
+  });
+  const coursesCount = uniqueAssignments.size;
+
+  // Calcular evaluaciones distintas (parciales) a partir de las notas
+  const evaluationSet = new Set();
+  allGrades.forEach((g) => {
+    Object.keys(g.partials).forEach((key) => {
+      evaluationSet.add(key);
+    });
+  });
+  const evaluationsCount = evaluationSet.size;
+
+  // Calcular total de notas registradas (cada parcial tiene continua y examen; substitutivo cuenta si existe)
+  let totalGrades = 0;
+  allGrades.forEach((g) => {
+    Object.values(g.partials).forEach((p) => {
+      if (p.continuous != null) totalGrades += 1;
+      if (p.exam != null) totalGrades += 1;
+    });
+    if (g.substitutive != null) totalGrades += 1;
+  });
+
+  // Cantidad de sesiones de asistencia tomadas
+  const sessionsCount = sessions.length;
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-gray-800">Bienvenido(a) al Panel Docente</h1>
-      <div className="grid md:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-4 gap-4">
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
           <p className="text-sm text-blue-600 mb-1">Cursos dictados</p>
           <p className="text-3xl font-bold text-blue-700">{coursesCount}</p>
         </div>
         <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-center">
-          <p className="text-sm text-green-600 mb-1">Evaluaciones</p>
-          <p className="text-3xl font-bold text-green-700">{evaluationsCount}</p>
+          <p className="text-sm text-green-600 mb-1">Sesiones de asistencia</p>
+          <p className="text-3xl font-bold text-green-700">{sessionsCount}</p>
+        </div>
+        <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg text-center">
+          <p className="text-sm text-orange-600 mb-1">Evaluaciones</p>
+          <p className="text-3xl font-bold text-orange-700">{evaluationsCount}</p>
         </div>
         <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg text-center">
           <p className="text-sm text-purple-600 mb-1">Notas registradas</p>

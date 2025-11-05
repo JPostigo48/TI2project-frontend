@@ -1,21 +1,42 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, ChevronDown, Folder, File, Code, Database, Settings, LogIn, Users, BookOpen, CheckCircle2 } from 'lucide-react';
+import {
+  ChevronRight,
+  ChevronDown,
+  Folder,
+  File,
+  Code,
+  Database,
+  Settings,
+  LogIn,
+  Users,
+  BookOpen,
+  CheckCircle2,
+  Circle,
+} from 'lucide-react';
 
+/**
+ * Página de documentación y presentación del proyecto. Contiene una
+ * descripción del equipo, características y un roadmap de avances
+ * por integrante. Se adaptó para añadir un apartado de roadmap que
+ * muestra de forma resumida qué avances ha realizado cada miembro y
+ * cuáles son las próximas tareas asignadas, resaltando que Juan
+ * Postigo lleva una carga ligeramente mayor. Se añadió también
+ * una breve lista de actividades futuras que incluyen conectar
+ * backend y frontend.
+ */
 const ProjectDocs = () => {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState({
-    'src': true,
-    'api': true,
-    'services': true,
-    'components': true,
-    'pages': true,
+    src: true,
+    api: true,
+    services: true,
+    components: true,
+    pages: true,
   });
-
   const toggle = (key) => {
-    setExpanded(prev => ({ ...prev, [key]: !prev[key] }));
+    setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
-
   const structure = {
     'src/': {
       type: 'folder',
@@ -33,7 +54,7 @@ const ProjectDocs = () => {
             'shared/': { type: 'folder' },
             'student/': { type: 'folder' },
             'teacher/': { type: 'folder' },
-          }
+          },
         },
         'pages/': {
           type: 'folder',
@@ -41,15 +62,14 @@ const ProjectDocs = () => {
           children: {
             'student/': { type: 'folder' },
             'teacher/': { type: 'folder' },
-          }
+          },
         },
         'routes/': { type: 'folder', icon: <Settings className="w-4 h-4 text-purple-500" /> },
         'utils/': { type: 'folder' },
         'config/': { type: 'folder', icon: <Settings className="w-4 h-4 text-red-500" /> },
-      }
+      },
     },
   };
-
   const renderTree = (node, name, level = 0) => {
     if (node.type === 'file') {
       return (
@@ -59,33 +79,73 @@ const ProjectDocs = () => {
         </div>
       );
     }
-
     const isExpanded = expanded[node.key];
-    
     return (
       <div key={name}>
-        <div 
+        <div
           className="flex items-center gap-2 py-1 px-2 hover:bg-blue-50 rounded cursor-pointer"
           style={{ paddingLeft: `${level * 20}px` }}
           onClick={() => node.key && toggle(node.key)}
         >
           {node.key ? (
             isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />
-          ) : <div className="w-4" />}
+          ) : (
+            <div className="w-4" />
+          )}
           {node.icon || <Folder className="w-4 h-4 text-blue-500" />}
           <span className="text-sm font-mono font-semibold">{name}</span>
         </div>
         {(!node.key || isExpanded) && node.children && (
           <div>
-            {Object.entries(node.children).map(([childName, childNode]) => 
-              renderTree(childNode, childName, level + 1)
-            )}
+            {Object.entries(node.children).map(([childName, childNode]) => renderTree(childNode, childName, level + 1))}
           </div>
         )}
       </div>
     );
   };
-
+  // Definición del roadmap por integrante
+  const roadmapData = [
+    {
+      name: 'Natalie Marleny Lazo Paxi',
+      done: ['Implementación del módulo de horario estudiantil', 'Pantalla de Dashboard para estudiantes'],
+      todo: ['Integrar matrícula de laboratorio con backend', 'Diseñar vista de perfil de estudiante'],
+    },
+    {
+      name: 'Juan Carlos Postigo Cabana',
+      done: [
+        'Estructura inicial del proyecto y configuración de rutas',
+        'Desarrollo de componentes compartidos (botones, layout)',
+        'Integración del módulo de notas y asistencia docente',
+      ],
+      todo: [
+        'Refactorizar estilos y mejorar experiencia de usuario',
+        'Integrar persistencia de datos con el backend',
+        'Documentar y automatizar despliegues',
+      ],
+    },
+    {
+      name: 'Leonardo Adriano Paxi Huayhua',
+      done: ['Página de horario del docente', 'Módulo de reserva de ambientes'],
+      todo: ['Completar estadísticas en el dashboard docente', 'Optimizar consultas con React Query'],
+    },
+    {
+      name: 'Jhosep Angel Cacsire Sanchez',
+      done: ['Diseño de modelo de datos en el backend', 'Endpoints para asistencia y cursos'],
+      todo: ['Implementar autenticación y autorización', 'Crear API para gestión de notas y reservas'],
+    },
+    {
+      name: 'Jorge Patrick Taquiri Guerreros',
+      done: ['API de matrícula estudiantil', 'Servicios de consulta para calendario de clases'],
+      todo: ['Endpoints de reserva de ambientes', 'Sincronización de datos con frontend'],
+    },
+  ];
+  // Actividades generales a futuro
+  const futureTasks = [
+    'Conexión entre backend y frontend mediante API REST',
+    'Implementar autenticación con tokens JWT',
+    'Persistencia de datos en base de datos relacional',
+    'Desplegar la aplicación en un entorno de producción',
+  ];
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header */}
@@ -93,7 +153,7 @@ const ProjectDocs = () => {
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold mb-3">🎓 Sistema Académico UNSA</h1>
+              <h1 className="text-4xl font-bold mb-3"> Sistema Académico UNSA</h1>
               <p className="text-blue-100 text-lg">
                 Plataforma web para gestión académica de estudiantes y docentes
               </p>
@@ -122,7 +182,7 @@ const ProjectDocs = () => {
       <div className="max-w-7xl mx-auto px-6 py-12">
         {/* Equipo */}
         <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">👥 Equipo de Desarrollo</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-6"> Equipo de Desarrollo</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               'Natalie Marleny Lazo Paxi',
@@ -133,11 +193,66 @@ const ProjectDocs = () => {
             ].map((name, i) => (
               <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                 <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center font-semibold text-blue-600">
-                  {name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                  {name
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .slice(0, 2)}
                 </div>
                 <span className="text-sm text-gray-700">{name}</span>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Roadmap */}
+        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Roadmap del Proyecto</h2>
+          <div className="space-y-6">
+            {roadmapData.map((member, idx) => (
+              <div key={idx} className="border border-gray-200 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-blue-700 mb-2">{member.name}</h3>
+                <div className="grid md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <h4 className="font-medium text-green-700 mb-1 flex items-center gap-1">
+                      <CheckCircle2 size={16} className="text-green-600" /> Avances
+                    </h4>
+                    <ul className="list-disc list-inside space-y-1">
+                      {member.done.map((task, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <CheckCircle2 size={14} className="mt-0.5 text-green-500" />
+                          <span>{task}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-yellow-700 mb-1 flex items-center gap-1">
+                      <Circle size={16} className="text-yellow-600" /> Próximas tareas
+                    </h4>
+                    <ul className="list-disc list-inside space-y-1">
+                      {member.todo.map((task, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <Circle size={14} className="mt-0.5 text-yellow-500" />
+                          <span>{task}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Tareas generales a futuro */}
+          <div className="mt-8">
+            <h3 className="text-xl font-semibold text-purple-700 mb-2 flex items-center gap-2">
+              <Code size={20} className="text-purple-600" /> Próximos pasos generales
+            </h3>
+            <ul className="list-disc list-inside text-sm space-y-1">
+              {futureTasks.map((task, i) => (
+                <li key={i}>{task}</li>
+              ))}
+            </ul>
           </div>
         </div>
 
@@ -163,7 +278,6 @@ const ProjectDocs = () => {
               </li>
             </ul>
           </div>
-
           <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
               <BookOpen className="text-green-600" size={24} />
@@ -184,7 +298,6 @@ const ProjectDocs = () => {
               </li>
             </ul>
           </div>
-
           <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
               <Code className="text-purple-600" size={24} />
@@ -209,8 +322,7 @@ const ProjectDocs = () => {
 
         {/* Arquitectura */}
         <div className="bg-white rounded-xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">📁 Arquitectura del Proyecto</h2>
-          
+          <h2 className="text-2xl font-bold text-gray-800 mb-6"> Arquitectura del Proyecto</h2>
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Estructura de carpetas */}
             <div>
@@ -219,51 +331,35 @@ const ProjectDocs = () => {
                 {Object.entries(structure).map(([name, node]) => renderTree(node, name))}
               </div>
             </div>
-
             {/* Capas */}
             <div>
               <h3 className="text-lg font-semibold text-gray-700 mb-4">Capas de la Arquitectura</h3>
               <div className="space-y-3">
                 <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <h4 className="font-semibold text-blue-800 mb-1">📱 Presentación</h4>
-                  <p className="text-sm text-gray-600">
-                    Pages y Components - Interfaz de usuario con React
-                  </p>
+                  <h4 className="font-semibold text-blue-800 mb-1"> Presentación</h4>
+                  <p className="text-sm text-gray-600">Pages y Components - Interfaz de usuario con React</p>
                 </div>
                 <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                   <h4 className="font-semibold text-green-800 mb-1">⚙️ Aplicación</h4>
-                  <p className="text-sm text-gray-600">
-                    Services y Hooks - Lógica de negocio y casos de uso
-                  </p>
+                  <p className="text-sm text-gray-600">Services y Hooks - Lógica de negocio y casos de uso</p>
                 </div>
                 <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                  <h4 className="font-semibold text-purple-800 mb-1">🔌 Infraestructura</h4>
-                  <p className="text-sm text-gray-600">
-                    API Client y Mocks - Comunicación con backend
-                  </p>
+                  <h4 className="font-semibold text-purple-800 mb-1"> Infraestructura</h4>
+                  <p className="text-sm text-gray-600">API Client y Mocks - Comunicación con backend</p>
                 </div>
                 <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                  <h4 className="font-semibold text-yellow-800 mb-1">💾 Estado</h4>
-                  <p className="text-sm text-gray-600">
-                    Context y React Query - Gestión de estado global
-                  </p>
+                  <h4 className="font-semibold text-yellow-800 mb-1"> Estado</h4>
+                  <p className="text-sm text-gray-600">Context y React Query - Gestión de estado global</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
         {/* Footer */}
         <div className="mt-12 text-center text-gray-600">
-          <p className="text-sm">
-            Universidad Nacional de San Agustín de Arequipa
-          </p>
-          <p className="text-sm mt-1">
-            Escuela Profesional de Ciencia de la Computación
-          </p>
-          <p className="text-xs mt-2 text-gray-500">
-            Docente: Yessenia Deysi Yari Ramos
-          </p>
+          <p className="text-sm">Universidad Nacional de San Agustín de Arequipa</p>
+          <p className="text-sm mt-1">Escuela Profesional de Ciencia de la Computación</p>
+          <p className="text-xs mt-2 text-gray-500">Docente: Yessenia Deysi Yari Ramos</p>
         </div>
       </div>
     </div>

@@ -1,8 +1,10 @@
-// src/mocks/teacher.mock.js
+// Modified teacher.mock.js with week tracking for attendance sessions
 
+// Based on original file from TI2project-frontend
+// Importa el catálogo de cursos desde el mock de estudiantes
 import { coursesById } from './student.mock';
 
-// Perfil del docente
+// Perfil del docente (sin cambios)
 export const teacherProfile = {
   id: 'tch-001',
   code: 'DOC2024001',
@@ -54,16 +56,24 @@ export function getTeacherRoster(courseCode, section) {
   return rostersByCourseSection[`${courseCode}-${section}`] ?? [];
 }
 
-// Sesiones de asistencia (abiertas/cerradas)
-const attendanceSessions = []; // { id, courseCode, section, blockId, openedAt, closedAt, status, records[] }
+// Sesiones de asistencia (abiertas/cerradas) con semana
+const attendanceSessions = []; // { id, courseCode, section, blockId, openedAt, closedAt, status, week, records[] }
 
-// Abre sesión de asistencia para un bloque
+// Abre sesión de asistencia para un bloque, asignando número de semana
 export function openAttendanceSession({ courseCode, section, blockId, openedAt = new Date().toISOString() }) {
+  // Cerrar cualquier sesión abierta para el mismo bloque
   for (const s of attendanceSessions) {
     if (s.courseCode === courseCode && s.section === section && s.blockId === blockId && s.status === 'OPEN') {
       s.status = 'CLOSED';
       s.closedAt = openedAt;
     }
+  }
+  // Calcular la próxima semana basándose en sesiones existentes del mismo curso y sección
+  const sessionsForCourse = attendanceSessions.filter((s) => s.courseCode === courseCode && s.section === section);
+  let nextWeek = 1;
+  if (sessionsForCourse.length > 0) {
+    const maxWeek = Math.max(...sessionsForCourse.map((s) => Number(s.week || 0)));
+    nextWeek = maxWeek + 1;
   }
   const id = `att-${courseCode}-${section}-${Date.now()}`;
   attendanceSessions.push({
@@ -74,6 +84,7 @@ export function openAttendanceSession({ courseCode, section, blockId, openedAt =
     openedAt,
     closedAt: null,
     status: 'OPEN',
+    week: nextWeek,
     records: [],
   });
   return id;
@@ -105,12 +116,12 @@ export function closeAttendanceSession(sessionId) {
   return true;
 }
 export function listAttendanceSessions({ courseCode, section } = {}) {
-  return attendanceSessions.filter((s) =>
+  return attendanceSessions.filter((s) => (
     (!courseCode || s.courseCode === courseCode) && (!section || s.section === section)
-  );
+  ));
 }
 
-// Notas gestionadas por el docente (por curso y sección)
+// Gestión de notas (sin cambios en esta sección)
 const teacherGradesByCourse = {
   CS101: {
     A: {
@@ -158,7 +169,6 @@ const teacherGradesByCourse = {
   },
 };
 
-// Helpers para cálculo final (igual que en student.mock)
 function computePartialScore(partial, weights) {
   const c = Number(partial?.continuous ?? 0);
   const e = Number(partial?.exam ?? 0);
@@ -167,12 +177,14 @@ function computePartialScore(partial, weights) {
 function computeCourseFinalForStudent(courseCode, studentGrades, catalog = coursesById) {
   const scheme = catalog[courseCode]?.evaluationScheme;
   if (!scheme || !studentGrades) return null;
-
   let P1 = computePartialScore(studentGrades.P1, scheme.partials.P1.weights);
   let P2 = computePartialScore(studentGrades.P2, scheme.partials.P2.weights);
   const P3 = computePartialScore(studentGrades.P3, scheme.partials.P3.weights);
-
-  if (scheme.hasSubstitutive && studentGrades.substitutive != null && scheme.substitutiveReplaces === 'minExamOfP1P2') {
+  if (
+    scheme.hasSubstitutive &&
+    studentGrades.substitutive != null &&
+    scheme.substitutiveReplaces === 'minExamOfP1P2'
+  ) {
     const exam1 = Number(studentGrades.P1?.exam ?? 0);
     const exam2 = Number(studentGrades.P2?.exam ?? 0);
     const minExam = Math.min(exam1, exam2);
@@ -190,13 +202,9 @@ function computeCourseFinalForStudent(courseCode, studentGrades, catalog = cours
   const finalScore = P1 * fw.P1 + P2 * fw.P2 + P3 * fw.P3;
   return { P1, P2, P3, finalScore };
 }
-
-// Obtiene las notas de una sección
 export function getTeacherGrades(courseCode, section) {
   return teacherGradesByCourse?.[courseCode]?.[section] ?? {};
 }
-
-// Actualiza una nota parcial (continua o examen)
 export function setTeacherGrade({ courseCode, section, studentId, partial, kind, value }) {
   if (!teacherGradesByCourse[courseCode]) teacherGradesByCourse[courseCode] = {};
   if (!teacherGradesByCourse[courseCode][section]) teacherGradesByCourse[courseCode][section] = {};
@@ -211,8 +219,6 @@ export function setTeacherGrade({ courseCode, section, studentId, partial, kind,
   teacherGradesByCourse[courseCode][section][studentId][partial][kind] = Number(value);
   return true;
 }
-
-// Actualiza el sustitutorio
 export function setTeacherSubstitutive({ courseCode, section, studentId, value }) {
   if (!teacherGradesByCourse[courseCode]) teacherGradesByCourse[courseCode] = {};
   if (!teacherGradesByCourse[courseCode][section]) teacherGradesByCourse[courseCode][section] = {};
@@ -227,8 +233,6 @@ export function setTeacherSubstitutive({ courseCode, section, studentId, value }
   teacherGradesByCourse[courseCode][section][studentId].substitutive = value == null ? null : Number(value);
   return true;
 }
-
-// Devuelve resumen de notas por sección, con nota final calculada
 export function getTeacherGradesSummary(courseCode, section, catalog = coursesById) {
   const sectionGrades = getTeacherGrades(courseCode, section);
   const entries = Object.entries(sectionGrades);
@@ -245,23 +249,43 @@ export function getTeacherGradesSummary(courseCode, section, catalog = coursesBy
     };
   });
 }
-
-// Ambientes / salas disponibles
+// Rooms (unchanged)
 export const rooms = [
   { id: 'room1', name: 'Laboratorio 1', capacity: 30 },
   { id: 'room2', name: 'Sala de Conferencias', capacity: 50 },
   { id: 'room3', name: 'Aula Magna', capacity: 100 },
 ];
-
-// Funciones “API” mock
-export async function mockGetTeacherProfile() { return structuredClone(teacherProfile); }
-export async function mockGetTeacherSchedule() { return getTeacherSchedule(); }
-export async function mockGetTeacherRoster(courseCode, section) { return structuredClone(getTeacherRoster(courseCode, section)); }
-export async function mockOpenAttendanceSession(args) { return openAttendanceSession(args); }
-export async function mockMarkAttendance(args) { return markAttendance(args); }
-export async function mockCloseAttendanceSession(sessionId) { return closeAttendanceSession(sessionId); }
-export async function mockListAttendanceSessions(filter) { return listAttendanceSessions(filter); }
-export async function mockGetTeacherGrades(courseCode, section) { return structuredClone(getTeacherGrades(courseCode, section)); }
-export async function mockSetTeacherGrade(payload) { return setTeacherGrade(payload); }
-export async function mockSetTeacherSubstitutive(payload) { return setTeacherSubstitutive(payload); }
-export async function mockGetTeacherGradesSummary(courseCode, section) { return structuredClone(getTeacherGradesSummary(courseCode, section)); }
+// API-like functions for mocks
+export async function mockGetTeacherProfile() {
+  return structuredClone(teacherProfile);
+}
+export async function mockGetTeacherSchedule() {
+  return getTeacherSchedule();
+}
+export async function mockGetTeacherRoster(courseCode, section) {
+  return structuredClone(getTeacherRoster(courseCode, section));
+}
+export async function mockOpenAttendanceSession(args) {
+  return openAttendanceSession(args);
+}
+export async function mockMarkAttendance(args) {
+  return markAttendance(args);
+}
+export async function mockCloseAttendanceSession(sessionId) {
+  return closeAttendanceSession(sessionId);
+}
+export async function mockListAttendanceSessions(filter) {
+  return structuredClone(listAttendanceSessions(filter));
+}
+export async function mockGetTeacherGrades(courseCode, section) {
+  return structuredClone(getTeacherGrades(courseCode, section));
+}
+export async function mockSetTeacherGrade(payload) {
+  return setTeacherGrade(payload);
+}
+export async function mockSetTeacherSubstitutive(payload) {
+  return setTeacherSubstitutive(payload);
+}
+export async function mockGetTeacherGradesSummary(courseCode, section) {
+  return structuredClone(getTeacherGradesSummary(courseCode, section));
+}
