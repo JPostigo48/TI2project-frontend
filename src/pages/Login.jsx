@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
+import { users } from '../mocks/auth.mock';
 
 const Login = () => {
   const { login } = useAuth();
@@ -30,7 +31,7 @@ const Login = () => {
   // Función helper para login rápido en desarrollo
   const quickLogin = (userEmail) => {
     setEmail(userEmail);
-    setPassword('123456');
+    setPassword('pass_test_123');
   };
 
   return (
@@ -116,16 +117,16 @@ const Login = () => {
           <p className="text-white text-sm font-semibold mb-3">🔐 Usuarios de prueba:</p>
           <div className="space-y-2">
             <button
-              onClick={() => quickLogin('alumno@unsa.edu.pe')}
+              onClick={() => quickLogin(`${users[0].email}`)}
               className="w-full text-left px-3 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm transition-colors"
             >
-              👨‍🎓 Alumno: alumno@unsa.edu.pe / 123456
+              👨‍🎓 Alumno: {users[0].email} / pass_test_123
             </button>
             <button
-              onClick={() => quickLogin('docente@unsa.edu.pe')}
+              onClick={() => quickLogin(`${users[1].email}`)}
               className="w-full text-left px-3 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg text-sm transition-colors"
             >
-              👨‍🏫 Docente: docente@unsa.edu.pe / 123456
+              👨‍🏫 Docente: {users[1].email} / pass_test_123
             </button>
           </div>
         </div>

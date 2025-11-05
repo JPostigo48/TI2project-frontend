@@ -8,18 +8,18 @@
  * cuentas utilizan la contraseña `123456`.
  */
 
-const users = [
+export const users = [
   {
     id: 'stu-1',
     name: 'Juan Pérez',
-    email: 'alumno@unsa.edu.pe',
-    code: '2020123456',
+    email: 'alumno_test@unsa.edu.pe',
+    code: '20201234',
     role: 'STUDENT',
   },
   {
     id: 'tch-1',
     name: 'María López',
-    email: 'docente@unsa.edu.pe',
+    email: 'docente_test@unsa.edu.pe',
     code: 'DOC001',
     role: 'TEACHER',
   },
@@ -28,7 +28,7 @@ const users = [
 export async function mockLogin(email, password) {
   await new Promise((resolve) => setTimeout(resolve, 300));
   const user = users.find((u) => u.email === email);
-  if (user && password === '123456') {
+  if (user && password === 'pass_test_123') {
     return { success: true, user, token: `${user.id}-token` };
   }
   return { success: false, message: 'Credenciales inválidas' };
