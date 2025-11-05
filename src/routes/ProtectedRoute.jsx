@@ -9,7 +9,6 @@ import { ROUTES } from '../utils/constants';
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const { user, loading, isAuthenticated } = useAuth();
 
-  // Mostrar un loading mientras se verifica la autenticación
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -18,12 +17,10 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     );
   }
 
-  // Si no está autenticado, redirigir al login
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.LOGIN} replace />;
   }
 
-  // Si hay roles permitidos y el usuario no tiene uno de ellos
   if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -41,7 +38,6 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     );
   }
 
-  // Si todo está bien, renderizar el componente hijo
   return children;
 };
 

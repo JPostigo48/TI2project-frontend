@@ -5,7 +5,6 @@ import { Calendar, Clock, MapPin, User, Loader2 } from 'lucide-react';
 import { DAYS } from '../../utils/constants';
 
 const StudentSchedule = () => {
-  // Usar React Query para obtener el horario
   const { data: schedule, isLoading, error } = useQuery({
     queryKey: ['student-schedule'],
     queryFn: () => StudentService.getSchedule(),
@@ -33,14 +32,12 @@ const StudentSchedule = () => {
   // Agrupar por día
   const scheduleByDay = {};
   const daysOrder = Object.values(DAYS);
-  
   daysOrder.forEach(day => {
     scheduleByDay[day] = schedule?.filter(item => item.day === day) || [];
   });
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Mi Horario</h1>
@@ -52,20 +49,16 @@ const StudentSchedule = () => {
         </div>
       </div>
 
-      {/* Vista de horario por día */}
       <div className="space-y-4">
         {daysOrder.map(day => {
           const dayClasses = scheduleByDay[day];
-          
           if (dayClasses.length === 0) return null;
-          
           return (
             <div key={day} className="card">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
                 {day}
               </h3>
-              
               <div className="space-y-3">
                 {dayClasses.map(classItem => (
                   <div
@@ -79,7 +72,6 @@ const StudentSchedule = () => {
                       <p className="text-sm text-gray-600 mb-2">
                         {classItem.courseCode} - Sección {classItem.section}
                       </p>
-                      
                       <div className="flex flex-wrap gap-4 text-sm">
                         <div className="flex items-center gap-1 text-gray-600">
                           <Clock size={16} />
@@ -95,7 +87,6 @@ const StudentSchedule = () => {
                         </div>
                       </div>
                     </div>
-                    
                     <div className="mt-3 md:mt-0">
                       <span className="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded-full">
                         2 horas

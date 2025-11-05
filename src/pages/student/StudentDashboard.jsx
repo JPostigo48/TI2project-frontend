@@ -42,7 +42,6 @@ const StudentDashboard = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-8 text-white">
         <h1 className="text-3xl font-bold mb-2">
           ¡Bienvenido, {user?.name?.split(' ')[0]}! 👋
@@ -51,8 +50,6 @@ const StudentDashboard = () => {
           Código: {user?.code} | Ciencia de la Computación
         </p>
       </div>
-
-      {/* Quick Links */}
       <div>
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Accesos Rápidos</h2>
         <div className="grid md:grid-cols-3 gap-4">
@@ -72,12 +69,9 @@ const StudentDashboard = () => {
           })}
         </div>
       </div>
-
-      {/* Resumen rápido */}
       <div>
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Resumen</h2>
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Próximas clases */}
           <div className="card">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -102,8 +96,6 @@ const StudentDashboard = () => {
               </div>
             </div>
           </div>
-
-          {/* Estadísticas */}
           <div className="card">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">

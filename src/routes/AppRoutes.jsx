@@ -1,10 +1,9 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { ROUTES, ROLES } from '../utils/constants';
 import ProtectedRoute from './ProtectedRoute';
 import Layout from '../components/shared/Layout';
 
-// Páginas
 import ProjectDocs from '../pages/ProjectDocs';
 import Login from '../pages/Login';
 
@@ -26,10 +25,8 @@ const AppRoutes = () => {
     <Routes>
       {/* Página principal - Documentación del proyecto */}
       <Route path="/" element={<ProjectDocs />} />
-      
       {/* Ruta de login */}
       <Route path={ROUTES.LOGIN} element={<Login />} />
-
       {/* Rutas de Estudiante */}
       <Route
         path={ROUTES.STUDENT_DASHBOARD}
@@ -71,7 +68,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       {/* Rutas de Docente */}
       <Route
         path={ROUTES.TEACHER_DASHBOARD}
@@ -123,7 +119,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-
       {/* 404 */}
       <Route
         path="*"
