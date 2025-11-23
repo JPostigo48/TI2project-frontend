@@ -20,7 +20,6 @@ const Login = () => {
 
     try {
       const result = await login(email, password);
-      
       if (!result.success) {
         setError(result.message);
       }
@@ -31,14 +30,13 @@ const Login = () => {
     }
   };
 
-  // Función helper para login rápido en desarrollo
   const quickLogin = (userEmail) => {
     setEmail(userEmail);
     setPassword('pass_test_123');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 to-indigo-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-blue-600 to-indigo-800 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Card del formulario */}
         <div className="bg-white rounded-2xl shadow-2xl p-8">

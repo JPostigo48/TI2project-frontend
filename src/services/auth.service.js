@@ -21,7 +21,6 @@ class AuthService {
       return await mockLogin(email, password);
     }
     const response = await axiosClient.post(ENDPOINTS.AUTH.LOGIN, { email, password });
-    // Asumimos que la respuesta tiene forma { success, user, token }
     return response.data;
   }
 

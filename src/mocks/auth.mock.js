@@ -1,13 +1,3 @@
-/**
- * Mocks de autenticación.
- *
- * Estos mocks se utilizan cuando la variable de entorno
- * `VITE_USE_MOCK_DATA` es `true`.  Simulan el comportamiento del
- * backend para login, logout y recuperación de contraseña.  Las
- * contraseñas no se validan realmente, se asume que todas las
- * cuentas utilizan la contraseña `123456`.
- */
-
 export const users = [
   {
     id: 'stu-1',
