@@ -37,10 +37,6 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  /**
-   * Iniciar sesión con email y contraseña.
-   * En caso de éxito redirige al dashboard según el rol del usuario.
-   */
   const login = async (email, password) => {
     try {
       const result = await AuthService.login(email, password);

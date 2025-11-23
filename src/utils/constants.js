@@ -1,8 +1,8 @@
 // Definición de constantes para rutas, roles y utilidades varias.
 
 export const ROLES = {
-  STUDENT: 'STUDENT',
-  TEACHER: 'TEACHER',
+  STUDENT: 'student',
+  TEACHER: 'teacher',
 };
 
 export const ROUTES = {

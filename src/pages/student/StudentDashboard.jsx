@@ -42,7 +42,7 @@ const StudentDashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-8 text-white">
+      <div className="bg-linear-to-r from-blue-600 to-indigo-700 rounded-xl p-8 text-white">
         <h1 className="text-3xl font-bold mb-2">
           ¡Bienvenido, {user?.name?.split(' ')[0]}! 👋
         </h1>

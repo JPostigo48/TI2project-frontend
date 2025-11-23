@@ -4,14 +4,14 @@ export const users = [
     name: 'Juan Pérez',
     email: 'alumno_test@unsa.edu.pe',
     code: '20201234',
-    role: 'STUDENT',
+    role: 'student',
   },
   {
     id: 'tch-1',
     name: 'María López',
     email: 'docente_test@unsa.edu.pe',
     code: 'DOC001',
-    role: 'TEACHER',
+    role: 'teacher',
   },
 ];
 

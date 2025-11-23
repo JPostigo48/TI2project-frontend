@@ -16,14 +16,7 @@ import {
 } from 'lucide-react';
 
 /**
- * Página de documentación y presentación del proyecto. Contiene una
- * descripción del equipo, características y un roadmap de avances
- * por integrante. Se adaptó para añadir un apartado de roadmap que
- * muestra de forma resumida qué avances ha realizado cada miembro y
- * cuáles son las próximas tareas asignadas, resaltando que Juan
- * Postigo lleva una carga ligeramente mayor. Se añadió también
- * una breve lista de actividades futuras que incluyen conectar
- * backend y frontend.
+ * Página de documentación y presentación del proyecto.
  */
 const ProjectDocs = () => {
   const navigate = useNavigate();
@@ -34,9 +27,11 @@ const ProjectDocs = () => {
     components: true,
     pages: true,
   });
+
   const toggle = (key) => {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+
   const structure = {
     'src/': {
       type: 'folder',
@@ -70,16 +65,23 @@ const ProjectDocs = () => {
       },
     },
   };
+
   const renderTree = (node, name, level = 0) => {
     if (node.type === 'file') {
       return (
-        <div key={name} className="flex items-center gap-2 py-1 px-2" style={{ paddingLeft: `${level * 20 + 8}px` }}>
+        <div
+          key={name}
+          className="flex items-center gap-2 py-1 px-2"
+          style={{ paddingLeft: `${level * 20 + 8}px` }}
+        >
           <File className="w-4 h-4 text-gray-400" />
           <span className="text-sm font-mono">{name}</span>
         </div>
       );
     }
+
     const isExpanded = expanded[node.key];
+
     return (
       <div key={name}>
         <div
@@ -97,59 +99,126 @@ const ProjectDocs = () => {
         </div>
         {(!node.key || isExpanded) && node.children && (
           <div>
-            {Object.entries(node.children).map(([childName, childNode]) => renderTree(childNode, childName, level + 1))}
+            {Object.entries(node.children).map(([childName, childNode]) =>
+              renderTree(childNode, childName, level + 1)
+            )}
           </div>
         )}
       </div>
     );
   };
-  // Definición del roadmap por integrante
-  const roadmapData = [
-    {
-      name: 'Natalie Marleny Lazo Paxi',
-      done: ['Implementación del módulo de horario estudiantil', 'Pantalla de Dashboard para estudiantes'],
-      todo: ['Integrar matrícula de laboratorio con backend', 'Diseñar vista de perfil de estudiante'],
-    },
+
+  // Equipo (incluye retirados)
+  const teamMembers = [
     {
       name: 'Juan Carlos Postigo Cabana',
-      done: [
-        'Estructura inicial del proyecto y configuración de rutas',
-        'Desarrollo de componentes compartidos (botones, layout)',
-        'Integración del módulo de notas y asistencia docente',
-      ],
-      todo: [
-        'Refactorizar estilos y mejorar experiencia de usuario',
-        'Integrar persistencia de datos con el backend',
-        'Documentar y automatizar despliegues',
-      ],
+      status: 'active',
     },
     {
       name: 'Leonardo Adriano Paxi Huayhua',
-      done: ['Página de horario del docente', 'Módulo de reserva de ambientes'],
-      todo: ['Completar estadísticas en el dashboard docente', 'Optimizar consultas con React Query'],
-    },
-    {
-      name: 'Jhosep Angel Cacsire Sanchez',
-      done: ['Diseño de modelo de datos en el backend', 'Endpoints para asistencia y cursos'],
-      todo: ['Implementar autenticación y autorización', 'Crear API para gestión de notas y reservas'],
+      status: 'active',
     },
     {
       name: 'Jorge Patrick Taquiri Guerreros',
-      done: ['API de matrícula estudiantil', 'Servicios de consulta para calendario de clases'],
-      todo: ['Endpoints de reserva de ambientes', 'Sincronización de datos con frontend'],
+      status: 'active',
+    },
+    {
+      name: 'Natalie Marleny Lazo Paxi',
+      status: 'inactive',
+    },
+    {
+      name: 'Jhosep Angel Cacsire Sanchez',
+      status: 'inactive',
     },
   ];
-  // Actividades generales a futuro
-  const futureTasks = [
-    'Conexión entre backend y frontend mediante API REST',
-    'Implementar autenticación con tokens JWT',
-    'Persistencia de datos en base de datos relacional',
-    'Desplegar la aplicación en un entorno de producción',
+
+  // Roadmap por fechas
+  const roadmapTimeline = [
+    {
+      date: '5 de noviembre de 2025',
+      members: [
+        {
+          name: 'Juan Carlos Postigo Cabana',
+          status: 'active',
+          done: [
+            'Estructura inicial del proyecto y configuración de rutas',
+            'Desarrollo de componentes compartidos (botones, layout)',
+            'Integración del módulo de notas y asistencia docente',
+          ],
+          todo: [
+            'Refactorizar estilos y mejorar experiencia de usuario',
+            'Integrar persistencia de datos con el backend',
+            'Documentar y automatizar despliegues',
+          ],
+        },
+        {
+          name: 'Leonardo Adriano Paxi Huayhua',
+          status: 'active',
+          done: ['Página de horario del docente', 'Módulo de reserva de ambientes'],
+          todo: ['Completar estadísticas en el dashboard docente', 'Optimizar consultas con React Query'],
+        },
+        {
+          name: 'Jorge Patrick Taquiri Guerreros',
+          status: 'active',
+          done: ['API de matrícula estudiantil', 'Servicios de consulta para calendario de clases'],
+          todo: ['Endpoints de reserva de ambientes', 'Sincronización de datos con frontend'],
+        },
+        {
+          name: 'Natalie Marleny Lazo Paxi',
+          status: 'inactive',
+          done: [],
+          todo: [],
+        },
+        {
+          name: 'Jhosep Angel Cacsire Sanchez',
+          status: 'inactive',
+          done: [],
+          todo: [],
+        },
+      ],
+    },
+    {
+      date: '22 de noviembre de 2025',
+      members: [
+        {
+          name: 'Juan Carlos Postigo Cabana',
+          status: 'active',
+          done: [
+            'Implementación del backend con nueva tecnología',
+            'Conexión del backend con el frontend',
+            'Llenado parcial de datos en la base de datos para pruebas',
+          ],
+          todo: [],
+        },
+        {
+          name: 'Leonardo Adriano Paxi Huayhua',
+          status: 'active',
+          done: ['Implementaciones en frontend para visualización de datos'],
+          todo: [],
+        },
+        {
+          name: 'Jorge Patrick Taquiri Guerreros',
+          status: 'active',
+          done: [
+            'Revisión y corrección de bugs en el backend',
+            'Levantamiento y listado de funcionalidades futuras',
+          ],
+          todo: [],
+        },
+      ],
+    },
   ];
+
+  const futureTasks = [
+    'Completar funciones de Docente y reparar bugs menores',
+    'Implementar autenticación por medio de correo institucinal',
+    'Desplegar la base de datos en un entorno de producción',
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+      <div className="bg-linear-to-r from-blue-600 to-indigo-700 text-white">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="flex items-center justify-between">
             <div>
@@ -184,65 +253,128 @@ const ProjectDocs = () => {
         <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6"> Equipo de Desarrollo</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              'Natalie Marleny Lazo Paxi',
-              'Juan Carlos Postigo Cabana',
-              'Leonardo Adriano Paxi Huayhua',
-              'Jhosep Angel Cacsire Sanchez',
-              'Jorge Patrick Taquiri Guerreros',
-            ].map((name, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center font-semibold text-blue-600">
-                  {name
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')
-                    .slice(0, 2)}
+            {teamMembers.map((member, i) => {
+              const initials = member.name
+                .split(' ')
+                .map((n) => n[0])
+                .join('')
+                .slice(0, 2);
+
+              const isInactive = member.status === 'inactive';
+
+              return (
+                <div
+                  key={i}
+                  className={`flex items-center gap-3 p-3 rounded-lg border ${
+                    isInactive
+                      ? 'bg-red-50/70 border-red-200 text-red-700'
+                      : 'bg-gray-50 border-gray-200 text-gray-700'
+                  }`}
+                >
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+                      isInactive ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-600'
+                    }`}
+                  >
+                    {initials}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm">{member.name}</span>
+                    {isInactive && (
+                      <span className="text-[11px] uppercase tracking-wide font-semibold text-red-600">
+                        Retirada/o del equipo
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <span className="text-sm text-gray-700">{name}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         {/* Roadmap */}
         <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Roadmap del Proyecto</h2>
-          <div className="space-y-6">
-            {roadmapData.map((member, idx) => (
-              <div key={idx} className="border border-gray-200 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-blue-700 mb-2">{member.name}</h3>
-                <div className="grid md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <h4 className="font-medium text-green-700 mb-1 flex items-center gap-1">
-                      <CheckCircle2 size={16} className="text-green-600" /> Avances
-                    </h4>
-                    <ul className="list-disc list-inside space-y-1">
-                      {member.done.map((task, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <CheckCircle2 size={14} className="mt-0.5 text-green-500" />
-                          <span>{task}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-yellow-700 mb-1 flex items-center gap-1">
-                      <Circle size={16} className="text-yellow-600" /> Próximas tareas
-                    </h4>
-                    <ul className="list-disc list-inside space-y-1">
-                      {member.todo.map((task, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <Circle size={14} className="mt-0.5 text-yellow-500" />
-                          <span>{task}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+
+          <div className="space-y-8">
+            {roadmapTimeline.map((block, idx) => (
+              <div key={idx} className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-500" />
+                  <h3 className="text-lg font-semibold text-gray-800">{block.date}</h3>
+                </div>
+                <div className="space-y-6">
+                  {block.members.map((member, i) => {
+                    const isInactive = member.status === 'inactive';
+
+                    return (
+                      <div
+                        key={i}
+                        className={`rounded-lg p-4 border ${
+                          isInactive
+                            ? 'border-red-200 bg-red-50/60 text-red-800'
+                            : 'border-gray-200 bg-white text-gray-800'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="text-lg font-semibold">
+                            {member.name}
+                          </h3>
+                          {isInactive && (
+                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 uppercase tracking-wide">
+                              Retirada/o
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <h4 className="font-medium text-green-700 mb-1 flex items-center gap-1">
+                              <CheckCircle2 size={16} className="text-green-600" /> Avances
+                            </h4>
+                            {member.done && member.done.length > 0 ? (
+                              <ul className="list-disc list-inside space-y-1">
+                                {member.done.map((task, j) => (
+                                  <li key={j} className="flex items-start gap-2">
+                                    <CheckCircle2 size={14} className="mt-0.5 text-green-500" />
+                                    <span>{task}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="text-xs text-gray-500">
+                                Sin avances registrados en esta fecha.
+                              </p>
+                            )}
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-yellow-700 mb-1 flex items-center gap-1">
+                              <Circle size={16} className="text-yellow-600" /> Próximas tareas
+                            </h4>
+                            {member.todo && member.todo.length > 0 ? (
+                              <ul className="list-disc list-inside space-y-1">
+                                {member.todo.map((task, j) => (
+                                  <li key={j} className="flex items-start gap-2">
+                                    <Circle size={14} className="mt-0.5 text-yellow-500" />
+                                    <span>{task}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="text-xs text-gray-500">
+                                Sin tareas específicas registradas para esta fecha.
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}
           </div>
+
           {/* Tareas generales a futuro */}
           <div className="mt-8">
             <h3 className="text-xl font-semibold text-purple-700 mb-2 flex items-center gap-2">
@@ -355,6 +487,7 @@ const ProjectDocs = () => {
             </div>
           </div>
         </div>
+
         {/* Footer */}
         <div className="mt-12 text-center text-gray-600">
           <p className="text-sm">Universidad Nacional de San Agustín de Arequipa</p>
