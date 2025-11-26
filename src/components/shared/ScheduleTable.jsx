@@ -2,12 +2,11 @@
 import React from 'react';
 import { DAYS } from '../../utils/constants';
 
-// Bloques de tiempo oficiales de la universidad
 const TIME_SLOTS = [
   '07:00-07:50', '07:50-08:40', '08:50-09:40', '09:40-10:30',
   '10:40-11:30', '11:30-12:20', '12:20-13:10', '13:10-14:00',
   '14:00-14:50', '14:50-15:40', '15:50-16:40', '16:40-17:30',
-  '17:30-18:30', '18:30-19:20',
+  '17:30-18:30', '18:30-19:20', '19:20-20:10',
 ];
 
 const toMinutes = (hhmm) => {
@@ -30,7 +29,6 @@ function getSlotIndices(start, end) {
 
 export default function ScheduleTable({ blocks = [] }) {
   const dayKeys = Object.keys(DAYS);
-
   const emptyRow = () => ({
     Monday: null, Tuesday: null, Wednesday: null,
     Thursday: null, Friday: null, Saturday: null, Sunday: null,
@@ -38,6 +36,7 @@ export default function ScheduleTable({ blocks = [] }) {
   const table = TIME_SLOTS.map(() => emptyRow());
 
   blocks.forEach((block) => {
+  // mapea cada bloque a las filas correspondientes
     if (!block || !block.day || !dayKeys.includes(block.day)) return;
     const idxs = getSlotIndices(block.startTime, block.endTime);
     idxs.forEach((i) => {

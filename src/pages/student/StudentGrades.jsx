@@ -7,7 +7,7 @@ import ErrorMessage from '../../components/shared/ErrorMessage';
 import { calculateStats } from '../../utils/helpers';
 
 const StudentGrades = () => {
-  const { data: grades, isLoading, error } = useQuery({
+  const { data: grades = [], isLoading, error } = useQuery({
     queryKey: ['studentGrades'],
     queryFn: () => StudentService.getGrades(),
   });
@@ -15,8 +15,17 @@ const StudentGrades = () => {
   if (isLoading) return <LoadingSpinner message="Cargando notas..." />;
   if (error) return <ErrorMessage message="Error al cargar notas" />;
 
-  // Extraer las notas finales para estadísticas
-  const finals = grades.map(g => g.computed.finalScore ?? 0);
+  // no hay notas
+  if (!Array.isArray(grades) || grades.length === 0) {
+    return (
+      <div className="space-y-4 animate-fade-in">
+        <h1 className="text-xl font-semibold">Mis Notas</h1>
+        <p className="card">No hay notas registradas.</p>
+      </div>
+    );
+  }
+
+  const finals = grades.map((g) => g.computed?.finalScore ?? 0);
   const stats = calculateStats(finals);
 
   return (
@@ -45,14 +54,16 @@ const StudentGrades = () => {
           {grades.map((g) => (
             <tr key={g.courseCode} className="text-sm hover:bg-gray-50">
               <td className="p-2 font-medium">{g.courseName}</td>
-              <td className="p-2">{g.partials.P1?.continuous}</td>
-              <td className="p-2">{g.partials.P1?.exam}</td>
-              <td className="p-2">{g.partials.P2?.continuous}</td>
-              <td className="p-2">{g.partials.P2?.exam}</td>
-              <td className="p-2">{g.partials.P3?.continuous}</td>
-              <td className="p-2">{g.partials.P3?.exam}</td>
+              <td className="p-2">{g.partials?.P1?.continuous ?? '-'}</td>
+              <td className="p-2">{g.partials?.P1?.exam ?? '-'}</td>
+              <td className="p-2">{g.partials?.P2?.continuous ?? '-'}</td>
+              <td className="p-2">{g.partials?.P2?.exam ?? '-'}</td>
+              <td className="p-2">{g.partials?.P3?.continuous ?? '-'}</td>
+              <td className="p-2">{g.partials?.P3?.exam ?? '-'}</td>
               <td className="p-2">{g.substitutive ?? '-'}</td>
-              <td className="p-2 font-semibold">{g.computed.finalScore?.toFixed(2)}</td>
+              <td className="p-2 font-semibold">
+                {g.computed?.finalScore?.toFixed(2) ?? '0.00'}
+              </td>
             </tr>
           ))}
         </tbody>

@@ -7,28 +7,37 @@ import ErrorMessage from '../../components/shared/ErrorMessage';
 
 const LabEnrollment = () => {
   const qc = useQueryClient();
-  const { data: labs, isLoading, error } = useQuery({
+
+  const { data: labs = [], isLoading, error } = useQuery({
     queryKey: ['availableLabs'],
     queryFn: () => StudentService.getAvailableLabs(),
   });
 
-  // Mutación de ejemplo: simula inscripción (podrías llamarla a tu API real)
   const enroll = useMutation({
-    mutationFn: async (labId) => {
-      // en mocks no realizamos ninguna acción real
-      return labId;
-    },
+    mutationFn: async (labId) => labId,
     onSuccess: () => qc.invalidateQueries({ queryKey: ['availableLabs'] }),
   });
 
-  if (isLoading) return <LoadingSpinner message="Cargando laboratorios..." />;
-  if (error) return <ErrorMessage message="Error al cargar laboratorios" />;
-  if (!labs.length) return <p>No hay laboratorios disponibles.</p>;
+  if (isLoading) {
+    return <LoadingSpinner message="Cargando laboratorios..." />;
+  }
+  if (error) {
+    return <ErrorMessage message="Error al cargar laboratorios" />;
+  }
 
-  // Agrupar por curso
+  if (!Array.isArray(labs) || labs.length === 0) {
+    return (
+      <div className="space-y-4 animate-fade-in">
+        <h1 className="text-xl font-semibold">Inscripción a Laboratorios</h1>
+        <p>No hay laboratorios disponibles.</p>
+      </div>
+    );
+  }
+
   const grouped = labs.reduce((acc, lab) => {
-    if (!acc[lab.courseCode]) acc[lab.courseCode] = [];
-    acc[lab.courseCode].push(lab);
+    const code = lab.courseCode || 'SIN-CODIGO';
+    if (!acc[code]) acc[code] = [];
+    acc[code].push(lab);
     return acc;
   }, {});
 
@@ -40,10 +49,17 @@ const LabEnrollment = () => {
           <h2 className="font-semibold mb-2">Curso {courseCode}</h2>
           <ul className="space-y-2">
             {groupLabs.map((lab) => (
-              <li key={lab.id} className="flex justify-between items-center border p-2 rounded">
+              <li
+                key={lab.id || lab._id}
+                className="flex justify-between items-center border p-2 rounded"
+              >
                 <div>
-                  <div className="font-medium">{lab.group} ({lab.day} {lab.startTime}-{lab.endTime})</div>
-                  <div className="text-sm text-gray-600">Cupos: {lab.enrolled}/{lab.capacity}</div>
+                  <div className="font-medium">
+                    {lab.group} ({lab.day} {lab.startTime}-{lab.endTime})
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Cupos: {lab.enrolled}/{lab.capacity}
+                  </div>
                 </div>
                 <button
                   onClick={() => enroll.mutate(lab.id)}
