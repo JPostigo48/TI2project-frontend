@@ -8,8 +8,6 @@ import {
   mockGetStudentSchedule,
   mockGetStudentGrades,
   mockGetAvailableLabs,
-  // ✅ Asegúrate de crear o exportar esto en tu archivo student.mock.js
-  // Si no tienes el mock aún, puedes comentar esta línea y el if(USE_MOCK) de abajo.
   mockGetDashboardSummary, 
 } from '../mocks/student.mock';
 
@@ -32,9 +30,7 @@ class StudentService {
     const user = AuthService.getCurrentUser();
     if (!user) throw new Error('No hay usuario autenticado');
 
-    const response = await axiosClient.get(ENDPOINTS.STUDENT.SCHEDULE, {
-      params: { studentId: user.id },
-    });
+    const response = await axiosClient.get(ENDPOINTS.STUDENT.SCHEDULE, {});
     return response.data;
   }
 
@@ -50,14 +46,8 @@ class StudentService {
     return response.data;
   }
 
-  /**
-   * Obtener resumen para el Dashboard (Próxima clase y promedio).
-   * Corresponde a `GET /dashboard/student-summary`.
-   */
   async getDashboardSummary() {
-    // 1. Manejo de Mock (Consistencia)
     if (USE_MOCK) {
-      // Si no tienes este mock creado, comenta estas líneas o returnea un objeto dummy
        if (typeof mockGetDashboardSummary === 'function') {
            return await mockGetDashboardSummary();
        } else {
@@ -66,33 +56,51 @@ class StudentService {
        }
     }
 
-    // 2. Petición Real usando Endpoint centralizado
-    // Nota: No necesitamos enviar ID explícito porque el token en axiosClient identifica al usuario
     const response = await axiosClient.get(ENDPOINTS.STUDENT.SUMMARY);
     return response.data;
   }
 
-  async getAvailableLabs({ courseCode, semester } = {}) {
-    if (USE_MOCK) return await mockGetAvailableLabs();
+  async getAvailableLabs({ courseId, semesterId } = {}) {
+    if (USE_MOCK && typeof mockGetAvailableLabs === 'function') {
+      return await mockGetAvailableLabs({ courseId, semesterId });
+    }
 
     const params = {};
-    if (courseCode) params.course = courseCode;
-    if (semester) params.semester = semester;
-    
+    if (courseId) params.course = courseId;
+    if (semesterId) params.semester = semesterId;
+
     const response = await axiosClient.get(ENDPOINTS.STUDENT.LABS, { params });
     return response.data;
   }
 
-  async enrollLab(courseCode, preferences) {
-    if (USE_MOCK) throw new Error('Inscripción de laboratorio no implementada en mocks');
 
-    const user = AuthService.getCurrentUser();
-    if (!user) throw new Error('No hay usuario autenticado');
+  async enrollLab({ courseId, semesterId, preferences }) {
+    if (!Array.isArray(preferences) || preferences.length === 0) {
+      throw new Error('Debes seleccionar al menos una preferencia');
+    }
 
-    const payload = { courseCode, preferences };
+    if (USE_MOCK) {
+      throw new Error('Inscripción de laboratorio no implementada en mocks');
+    }
+
+    const payload = {
+      course: courseId,
+      semester: semesterId,
+      preferences,
+    };
+
     const response = await axiosClient.post(ENDPOINTS.STUDENT.ENROLL, payload);
     return response.data;
   }
+
+  async getEnrollment(courseId) {
+    if (USE_MOCK) {
+       return { labPreferences: [] }; 
+    }
+    const response = await axiosClient.get(`/student/enrollment/${courseId}`);
+    return response.data;
+  }
+
 }
 
 export default new StudentService();

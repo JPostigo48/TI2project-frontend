@@ -11,7 +11,7 @@ import Login from '../pages/Login';
 import StudentDashboard from '../pages/student/StudentDashboard';
 import StudentSchedule from '../pages/student/StudentSchedule';
 import StudentGrades from '../pages/student/StudentGrades';
-import LabEnrollment from '../pages/student/LabEnrollment';
+import StudentLabs from '../pages/student/StudentLabs';
 
 // Páginas de Docente
 import TeacherDashboard from '../pages/teacher/TeacherDashboard';
@@ -63,7 +63,7 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
             <Layout>
-              <LabEnrollment />
+              <StudentLabs />
             </Layout>
           </ProtectedRoute>
         }

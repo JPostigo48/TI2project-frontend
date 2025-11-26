@@ -13,7 +13,7 @@ const StudentSchedule = () => {
     select: (res) => Array.isArray(res) ? res : (res?.scheduleBlocks ?? []),
   });
 
-  console.log(blocks)
+  // console.log(blocks)
 
   if (isLoading) return <LoadingSpinner message="Cargando horario..." />;
   if (error) return <ErrorMessage message="Error al cargar horario" />;

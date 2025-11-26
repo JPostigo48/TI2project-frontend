@@ -1,33 +1,19 @@
 const ENDPOINTS = {
   AUTH: {
-    /**
-     * Iniciar sesión: envía un email y contraseña y devuelve un token
-     * JWT junto con datos básicos del usuario. Corresponde a
-     * `POST /auth/login` en el backend.
-     */
     LOGIN: '/auth/login',
-    /**
-     * Cerrar sesión: el backend puede invalidar el token. El
-     * controlador de frontend también limpiará la sesión local.
-     * Corresponde a `POST /auth/logout` (opcional en el backend).
-     */
     LOGOUT: '/auth/logout',
-    /**
-     * Recuperar contraseña: permite solicitar un restablecimiento de
-     * contraseña. Corresponde a `POST /auth/recover`.
-     */
     RECOVER_PASSWORD: '/auth/recover',
   },
   STUDENT: {
     PROFILE: '/users',
-    SCHEDULE: '/courses',
+    SCHEDULE: '/student/schedule',
     GRADES: '/grades',
-    LABS: '/labs/groups',
-    ENROLL: '/labs/preferences',
+    LABS: '/lab/groups',
+    ENROLL: '/lab/preferences',
     SUMMARY: '/student/summary', 
   },
   TEACHER: {
-    SCHEDULE: '/courses',
+    SCHEDULE: '/teacher/schedule',
     ATTENDANCE_LIST: '/attendance',
     SUBMIT_ATTENDANCE: '/attendance',
     GRADES: '/grades',

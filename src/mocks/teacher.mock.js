@@ -1,7 +1,3 @@
-// Modified teacher.mock.js with week tracking for attendance sessions
-
-// Based on original file from TI2project-frontend
-// Importa el catálogo de cursos desde el mock de estudiantes
 import { coursesById } from './student.mock';
 
 // Perfil del docente (sin cambios)
@@ -14,6 +10,31 @@ export const teacherProfile = {
     { courseCode: 'CS101', section: 'A' },
     { courseCode: 'CS202', section: 'B' },
   ],
+};
+
+export const mockGetAllGradesSummaryLogic = async () => {
+  // Reutilizamos los mocks existentes dentro de este archivo
+  const schedule = await mockGetTeacherSchedule();
+  
+  const uniqueAssignments = new Map();
+  schedule.forEach(b => {
+    const key = `${b.courseCode}-${b.section}`;
+    if (!uniqueAssignments.has(key)) {
+        uniqueAssignments.set(key, { courseCode: b.courseCode, section: b.section });
+    }
+  });
+
+  const promises = Array.from(uniqueAssignments.values()).map(async (asg) => {
+    const summaries = await mockGetTeacherGradesSummary(asg.courseCode, asg.section);
+    return summaries.map(row => ({
+        ...row,
+        courseCode: asg.courseCode,
+        section: asg.section
+    }));
+  });
+
+  const results = await Promise.all(promises);
+  return results.flat();
 };
 
 // Deriva bloques de horario según asignaciones y catálogo
@@ -56,19 +77,15 @@ export function getTeacherRoster(courseCode, section) {
   return rostersByCourseSection[`${courseCode}-${section}`] ?? [];
 }
 
-// Sesiones de asistencia (abiertas/cerradas) con semana
-const attendanceSessions = []; // { id, courseCode, section, blockId, openedAt, closedAt, status, week, records[] }
+const attendanceSessions = []; 
 
-// Abre sesión de asistencia para un bloque, asignando número de semana
 export function openAttendanceSession({ courseCode, section, blockId, openedAt = new Date().toISOString() }) {
-  // Cerrar cualquier sesión abierta para el mismo bloque
   for (const s of attendanceSessions) {
     if (s.courseCode === courseCode && s.section === section && s.blockId === blockId && s.status === 'OPEN') {
       s.status = 'CLOSED';
       s.closedAt = openedAt;
     }
   }
-  // Calcular la próxima semana basándose en sesiones existentes del mismo curso y sección
   const sessionsForCourse = attendanceSessions.filter((s) => s.courseCode === courseCode && s.section === section);
   let nextWeek = 1;
   if (sessionsForCourse.length > 0) {
@@ -259,10 +276,8 @@ export const rooms = [
 
 // --- Mock de reservas de ambientes ---
 const roomReservations = []; 
-// Estructura: { id, roomId, date, startTime, endTime, reason, createdAt, teacherId }
 
 function timeToMinutes(t) {
-  // t = "HH:MM"
   const [h, m] = t.split(":").map(Number);
   return h * 60 + m;
 }
@@ -275,7 +290,6 @@ export function reserveRoom({ roomId, date, startTime, endTime, reason, teacherI
   const end = timeToMinutes(endTime);
   if (end <= start) throw new Error("El horario de fin debe ser mayor al inicio");
 
-  // Conflictos: misma sala + misma fecha + solapes de horario
   const conflict = roomReservations.find(r =>
     r.roomId === roomId &&
     r.date === date &&

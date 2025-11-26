@@ -1,97 +1,118 @@
-// src/components/shared/ScheduleTable.jsx
 import React from 'react';
-import { DAYS } from '../../utils/constants';
-
-const TIME_SLOTS = [
-  '07:00-07:50', '07:50-08:40', '08:50-09:40', '09:40-10:30',
-  '10:40-11:30', '11:30-12:20', '12:20-13:10', '13:10-14:00',
-  '14:00-14:50', '14:50-15:40', '15:50-16:40', '16:40-17:30',
-  '17:30-18:30', '18:30-19:20', '19:20-20:10',
-];
-
-const toMinutes = (hhmm) => {
-  const [hh, mm] = String(hhmm).split(':');
-  return parseInt(hh || '0', 10) * 60 + parseInt(mm || '0', 10);
-};
-
-function getSlotIndices(start, end) {
-  const startMin = toMinutes(start);
-  const endMin = toMinutes(end);
-  const indices = [];
-  TIME_SLOTS.forEach((slot, idx) => {
-    const [s, e] = slot.split('-');
-    const sMin = toMinutes(s);
-    const eMin = toMinutes(e);
-    if (startMin < eMin && endMin > sMin) indices.push(idx);
-  });
-  return indices;
-}
+import { DAYS, ACADEMIC_HOURS } from '../../utils/constants';
 
 export default function ScheduleTable({ blocks = [] }) {
   const dayKeys = Object.keys(DAYS);
-  const emptyRow = () => ({
-    Monday: null, Tuesday: null, Wednesday: null,
-    Thursday: null, Friday: null, Saturday: null, Sunday: null,
+  const hourKeys = Object.keys(ACADEMIC_HOURS).map(Number).sort((a, b) => a - b);
+
+  const table = {};
+  hourKeys.forEach(hour => {
+    table[hour] = {
+      Monday: null, Tuesday: null, Wednesday: null, Thursday: null, 
+      Friday: null, Saturday: null, Sunday: null
+    };
   });
-  const table = TIME_SLOTS.map(() => emptyRow());
 
   blocks.forEach((block) => {
-  // mapea cada bloque a las filas correspondientes
     if (!block || !block.day || !dayKeys.includes(block.day)) return;
-    const idxs = getSlotIndices(block.startTime, block.endTime);
-    idxs.forEach((i) => {
-      if (i >= 0 && i < TIME_SLOTS.length) {
-        table[i][block.day] = block;
+
+    const startHour = Number(block.startHour);
+    const duration = Number(block.duration) || 1;
+
+    if (!Number.isFinite(startHour)) return;
+
+    for (let k = 0; k < duration; k += 1) {
+      const currentHour = startHour + k;
+      
+      if (table[currentHour]) {
+        table[currentHour][block.day] = block;
       }
-    });
+    }
   });
+
+  const getRoomName = (roomData) => {
+    if (!roomData) return null;
+    if (typeof roomData === 'object') return roomData.name || roomData.code;
+    if (typeof roomData === 'string' && roomData.length < 10) return roomData;
+    return null;
+  };
 
   return (
     <div className="overflow-x-auto bg-gray-50 rounded-lg shadow-sm border border-gray-200">
       <table className="min-w-full text-center text-sm text-gray-700">
         <thead>
           <tr className="bg-gray-200 text-gray-800 font-semibold">
-            <th className="border p-2">Hora</th>
+            <th className="border p-2 w-32">Hora</th>
             {dayKeys.map((eng) => (
-              <th key={eng} className="border p-2">
+              <th key={eng} className="border p-2 min-w-[140px]">
                 {DAYS[eng]}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {TIME_SLOTS.map((slot, i) => (
-            <tr key={slot} className="hover:bg-gray-100 transition-colors">
-              <td className="border p-2 font-medium bg-gray-100">{slot}</td>
-              {dayKeys.map((day) => {
-                const block = table[i][day];
-                const title = block?.courseName || block?.course || 'Clase';
-                const section = block?.section ? `Secc. ${block.section}` : null;
-                const room = block?.room || null;
-                const teacher = block?.teacher || null;
+          {hourKeys.map((hour) => {
+            const timeInfo = ACADEMIC_HOURS[hour];
+            const timeLabel = `${timeInfo.start} - ${timeInfo.end}`;
+            
+            return (
+              <tr key={hour} className="hover:bg-gray-100 transition-colors">
+                {/* Columna de Hora (Izquierda) */}
+                <td className="border p-2 font-medium bg-gray-100 text-xs">
+                    <div className="font-bold text-gray-600">{hour}° Hora</div>
+                    <div className="text-gray-500">{timeLabel}</div>
+                </td>
 
-                return (
-                  <td key={day} className="border p-1 align-middle">
-                    {block ? (
-                      <div className="bg-blue-50 rounded p-1 border border-blue-200 flex flex-col items-center justify-center h-full">
-                        <div className="font-semibold text-[15px] text-gray-800">{title}</div>
-                        {(section || room) && (
-                          <div className="text-[12px] text-gray-700">
-                            {[section, room].filter(Boolean).join(' • ')}
+                {/* Columnas de Días */}
+                {dayKeys.map((day) => {
+                  const block = table[hour][day];
+
+                  const title = block ? (block.courseName || block.course || 'Clase') : null;
+                  const group = block?.group ? `Grupo ${block.group}` : null;
+                  const section = block?.section ? `Secc. ${block.section}` : null;
+                  const room = getRoomName(block?.room);
+                  const teacher = block?.teacher?.name || (typeof block?.teacher === 'string' ? block.teacher : null);
+                  return (
+                    <td key={day} className="border p-1 align-middle h-16">
+                      {block ? (
+                        <div className={`rounded p-1 border flex flex-col items-center justify-center h-full w-full shadow-sm
+                            ${block.type === 'lab' 
+                                ? 'bg-purple-50 border-purple-200 text-purple-900' 
+                                : 'bg-blue-50 border-blue-200 text-blue-900'
+                            }
+                        `}>
+                          <div className="font-bold text-[13px] leading-tight">
+                            {title}
                           </div>
-                        )}
-                        {teacher && (
-                          <div className="text-[12px] text-gray-600">{teacher}</div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="h-full py-4"></div>
-                    )}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
+                          
+                          <div className="flex flex-wrap gap-1 justify-center mt-1">
+                             {(group || section) && (
+                                <span className="text-[10px] bg-white/60 px-1.5 rounded font-semibold">
+                                    {group || section}
+                                </span>
+                             )}
+                             {room && (
+                                <span className="text-[10px] bg-white/60 px-1.5 rounded font-semibold">
+                                    {room}
+                                </span>
+                             )}
+                          </div>
+
+                          {teacher && (
+                            <div className="text-[10px] opacity-80 mt-0.5 truncate max-w-[120px]">
+                                {teacher}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="h-full min-h-[50px]" />
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
