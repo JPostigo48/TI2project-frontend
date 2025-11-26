@@ -75,10 +75,13 @@ export default function ScheduleTable({ blocks = [] }) {
                   return (
                     <td key={day} className="border p-1 align-middle h-16">
                       {block ? (
-                        <div className={`rounded p-1 border flex flex-col items-center justify-center h-full w-full shadow-sm
-                            ${block.type === 'lab' 
+                        <div className={`rounded p-1 border flex flex-col items-center justify-center h-full w-full shadow-sm transition-all
+                            ${
+                              block.type === 'lab' 
                                 ? 'bg-purple-50 border-purple-200 text-purple-900' 
-                                : 'bg-blue-50 border-blue-200 text-blue-900'
+                                : block.type === 'reservation' 
+                                    ? 'bg-orange-50 border-orange-200 text-orange-900 ring-1 ring-orange-300'
+                                    : 'bg-blue-50 border-blue-200 text-blue-900' 
                             }
                         `}>
                           <div className="font-bold text-[13px] leading-tight">

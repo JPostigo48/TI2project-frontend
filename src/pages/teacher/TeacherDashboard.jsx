@@ -16,6 +16,7 @@ import TeacherService from '../../services/teacher.service';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import ErrorMessage from '../../components/shared/ErrorMessage';
 import { ROUTES } from '../../utils/constants';
+import NextClassCard from '../../components/shared/NextClassCard';
 
 const TeacherDashboard = () => {
   // 1. Cargar horario
@@ -48,20 +49,42 @@ const TeacherDashboard = () => {
     queryFn: () => TeacherService.listAttendanceSessions(),
   });
 
+  const flatSchedule = useMemo(() => {
+    if (!Array.isArray(schedule)) return [];
+    
+    const blocks = [];
+    schedule.forEach(section => {
+      // Si la sección tiene horario
+      if (Array.isArray(section.schedule)) {
+        section.schedule.forEach(slot => {
+          // Creamos un objeto estandarizado para la tarjeta
+          blocks.push({
+            ...slot, // day, startHour, duration, room
+            courseName: section.course?.name || 'Desconocido',
+            code: section.course?.code,
+            group: section.group || section.section,
+            type: section.type
+          });
+        });
+      }
+    });
+    return blocks;
+  }, [schedule]);
+
   // --- CÁLCULOS ---
   
   const stats = useMemo(() => {
     // A. GRUPOS / SECCIONES ÚNICAS
     const uniqueGroups = new Set();
-    console.log(schedule)
     if (Array.isArray(schedule)) {
-        schedule.forEach((b) => {
-            
-            const code = b.course?.code || b.courseCode || 'UNKNOWN';
-            const group = b.group || b.section || 'UD'; 
-            
-            uniqueGroups.add(`${code}-${group}`);
-        });
+      schedule.forEach((b) => {
+        
+        const type = b.type || 'UNKNOWN';
+        const code = b.course?.code || b.courseCode || 'UNKNOWN';
+        const group = b.group || b.section || 'UD'; 
+        
+        uniqueGroups.add(`${code}-${type}-${group}`);
+      });
     }
 
     // B. Evaluaciones y Notas Totales
@@ -103,12 +126,31 @@ const TeacherDashboard = () => {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* HEADER */}
-      <div className="bg-linear-to-r from-blue-700 to-indigo-800 rounded-xl p-8 text-white shadow-lg">
-        <h1 className="text-3xl font-bold mb-2">Panel Docente</h1>
-        <p className="text-blue-100 opacity-90">
-          Gestión académica y control de evaluaciones del semestre 2025-B
-        </p>
+      {/* HEADER CON GRID */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        
+        {/* COLUMNA IZQUIERDA: BIENVENIDA (Ocupa 2 espacios) */}
+        <div className="lg:col-span-2 bg-linear-to-r from-blue-700 to-indigo-800 rounded-xl p-8 text-white shadow-lg flex flex-col justify-center">
+          <h1 className="text-3xl font-bold mb-2">Panel Docente</h1>
+          <p className="text-blue-100 opacity-90 max-w-xl">
+            Bienvenido al sistema de gestión académica 2025-B. 
+            Aquí tienes un resumen de tu actividad reciente.
+          </p>
+          <div className="mt-6 flex gap-3">
+             <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg text-sm font-medium">
+                📅 Semestre 2025-B
+             </div>
+             <div className="bg-green-500/20 backdrop-blur-sm px-4 py-2 rounded-lg text-sm font-medium text-green-100 border border-green-500/30">
+                🟢 Estado: Activo
+             </div>
+          </div>
+        </div>
+
+        {/* COLUMNA DERECHA: PRÓXIMA CLASE (Ocupa 1 espacio) */}
+        <div className="lg:col-span-1 h-full">
+           {/* Aquí usamos el componente compartido */}
+           <NextClassCard schedule={flatSchedule} />
+        </div>
       </div>
 
       {/* KPI CARDS */}

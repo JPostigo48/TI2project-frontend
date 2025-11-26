@@ -102,14 +102,12 @@ class TeacherService {
 
   // --- CALIFICACIONES ---
 
-  async getGradesSummary(courseCode, section) {
-    if (USE_MOCK) return await mockGetTeacherGradesSummary(courseCode, section);
+  async getGradesSummary(sectionId) {
+    if (USE_MOCK) return await mockGetTeacherGradesSummary('', ''); 
     
-    const params = { summary: true };
-    if (courseCode && section) {
-      params.section = `${courseCode}-${section}`;
-    }
-    const response = await axiosClient.get(ENDPOINTS.TEACHER.GRADES, { params });
+    const response = await axiosClient.get(ENDPOINTS.TEACHER.GRADES, {
+      params: { section: sectionId, mode: 'matrix' },
+    });
     return response.data;
   }
 
@@ -147,18 +145,11 @@ class TeacherService {
     return response.data;
   }
 
-  async getRoomReservations(filter = {}) {
-    if (USE_MOCK) {
-      return typeof mockListRoomReservations === 'function' 
-        ? await mockListRoomReservations(filter) 
-        : [];
-    }
-    
-    const params = {};
-    if (filter.roomId) params.room = filter.roomId;
-    if (filter.date) params.date = filter.date;
-    
-    const response = await axiosClient.get(ENDPOINTS.TEACHER.ROOM_RESERVATIONS, { params });
+  async getReservations(isHistory = false) {
+    if (USE_MOCK) return []; // O tu mock si lo tienes
+    const response = await axiosClient.get(ENDPOINTS.TEACHER.ROOM_RESERVATIONS, {
+        params: { history: isHistory }
+    });
     return response.data;
   }
 

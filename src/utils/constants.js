@@ -47,3 +47,9 @@ export const ACADEMIC_HOURS = {
   14: { start: '18:30', end: '19:20' },
   15: { start: '19:20', end: '20:10' }
 };
+
+
+export const DAY_INDEX = {
+  'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 
+  'Thursday': 4, 'Friday': 5
+};
