@@ -1,27 +1,58 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
-// 1. Importamos el servicio y tus componentes compartidos
+import { Calendar, FileText, GraduationCap, TrendingUp } from 'lucide-react';
+import { ROUTES } from '../../utils/constants';
+
+// Servicios y Componentes
 import StudentService from '../../services/student.service';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import ErrorMessage from '../../components/shared/ErrorMessage';
-import { Calendar, FileText, GraduationCap, TrendingUp, Clock, MapPin } from 'lucide-react';
-import { ROUTES } from '../../utils/constants';
+import NextClassCard from '../../components/shared/NextClassCard'; // <--- IMPORTADO
 
 const StudentDashboard = () => {
   const { user } = useAuth();
 
-  // 2. Usamos useQuery llamando al SERVICIO, no a axios directo
+  // 1. Query para el Resumen (Notas/Promedio)
   const { 
     data: dashboardData, 
-    isLoading, 
-    error 
+    isLoading: loadingStats, 
+    error: errorStats 
   } = useQuery({
     queryKey: ['studentDashboard'],
-    queryFn: () => StudentService.getDashboardSummary(), // <--- Llamada a través del servicio
-    staleTime: 1000 * 60 * 5, // 5 minutos de caché
+    queryFn: () => StudentService.getDashboardSummary(),
+    staleTime: 1000 * 60 * 5, 
   });
+
+  // 2. Query para el Horario (Necesario para la NextClassCard)
+  const { 
+    data: schedule = [], 
+    isLoading: loadingSchedule 
+  } = useQuery({
+    queryKey: ['studentSchedule'],
+    queryFn: () => StudentService.getSchedule(),
+  });
+
+  // 3. Transformar el horario a lista plana (Igual que en TeacherDashboard)
+  const flatSchedule = useMemo(() => {
+    if (!Array.isArray(schedule)) return [];
+    
+    // Mapeamos para asegurar compatibilidad total con NextClassCard
+    // (Aunque tu controlador ya devuelve casi todo listo)
+    return schedule.map(block => ({
+        day: block.day,
+        startHour: Number(block.startHour),
+        duration: Number(block.duration || 1),
+        room: block.room, // Puede ser string o objeto
+        
+        // Mapeo de nombres para la tarjeta
+        courseName: block.courseName || 'Curso',
+        code: block.courseCode,
+        group: block.group,
+        type: block.type || 'theory'
+    }));
+  }, [schedule]);
 
   const quickLinks = [
     {
@@ -56,32 +87,42 @@ const StudentDashboard = () => {
     return colors[color] || colors.blue;
   };
 
-  // 3. Usamos tus componentes de carga y error para mantener consistencia visual
-  if (isLoading) return <LoadingSpinner message="Cargando tu panel..." />;
-  if (error) {
-    console.log(error)
-    return <ErrorMessage message="No pudimos cargar el resumen. Intenta recargar." />;
-  }
+  if (loadingStats || loadingSchedule) return <LoadingSpinner message="Cargando tu panel..." />;
+  if (errorStats) return <ErrorMessage message="No pudimos cargar el resumen." />;
 
-  // Valores por defecto seguros para evitar crashes si el backend devuelve null
-  const { stats, nextClass } = dashboardData || { stats: { average: 0, coursesCount: 0 }, nextClass: null };
-
+  // Datos seguros
+  const { stats } = dashboardData || { stats: { average: 0, coursesCount: 0 } };
+  
+  console.log("Horario Aplanado:", flatSchedule);
+  console.log("Hora actual del sistema:", new Date().toLocaleTimeString());
   return (
-    <div className="space-y-6 animate-fade-in"> {/* Agregué animate-fade-in como en tu otro componente */}
+    <div className="space-y-8 animate-fade-in">
       
-      {/* HEADER */}
-      <div className="bg-linear-to-r from-blue-600 to-indigo-700 rounded-xl p-8 text-white shadow-lg">
-        <h1 className="text-3xl font-bold mb-2">
-          ¡Bienvenido, {user?.name?.split(' ')[0]}! 👋
-        </h1>
-        <p className="text-blue-100 opacity-90">
-          Código: {user?.code} | Ciencia de la Computación
-        </p>
+      {/* HEADER CON GRID (Igual que en Docente) */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        
+        {/* BIENVENIDA */}
+        <div className="lg:col-span-2 bg-linear-to-r from-blue-600 to-indigo-700 rounded-xl p-8 text-white shadow-lg flex flex-col justify-center">
+          <h1 className="text-3xl font-bold mb-2">
+            ¡Hola, {user?.name?.split(' ')[0]}! 👋
+          </h1>
+          <p className="text-blue-100 opacity-90 max-w-md">
+            Bienvenido al panel estudiantil. Tienes <span className="font-bold text-white">{stats.coursesCount || 0} cursos</span> activos este semestre.
+          </p>
+          <div className="mt-6 inline-flex bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm border border-white/10">
+             <span className="text-sm font-medium">Código: {user?.code}</span>
+          </div>
+        </div>
+
+        {/* TARJETA PRÓXIMA CLASE (Componente Compartido) */}
+        <div className="lg:col-span-1 h-full">
+           <NextClassCard schedule={flatSchedule} />
+        </div>
       </div>
 
       {/* ACCESOS RÁPIDOS */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Accesos Rápidos</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Accesos Rápidos</h2>
         <div className="grid md:grid-cols-3 gap-4">
           {quickLinks.map((link) => {
             const Icon = link.icon;
@@ -100,86 +141,57 @@ const StudentDashboard = () => {
         </div>
       </div>
 
-      {/* RESUMEN DINÁMICO */}
+      {/* RESUMEN DE DESEMPEÑO (Solo dejamos este porque próxima clase ya está arriba) */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Resumen</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Mi Desempeño</h2>
         <div className="grid md:grid-cols-2 gap-6">
           
-          {/* TARJETA 1: PRÓXIMAS CLASES */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Calendar className="text-blue-600" size={20} />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800">Próxima Clase</h3>
-            </div>
-            
-            <div className="space-y-3">
-              {nextClass ? (
-                <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                  <p className="font-bold text-gray-800 text-lg">{nextClass.courseName}</p>
-                  
-                  <div className="flex items-center mt-2 text-sm text-gray-600 gap-4">
-                    <div className="flex items-center gap-1">
-                        <Clock size={16} />
-                        <span>{nextClass.day} {nextClass.time}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2 mt-3">
-                    <span className="text-xs font-bold px-2 py-1 bg-white text-blue-700 rounded shadow-sm">
-                      {nextClass.type}
-                    </span>
-                    <span className="text-xs font-bold px-2 py-1 bg-white text-gray-700 rounded shadow-sm flex items-center gap-1">
-                       <MapPin size={12}/> Aula {nextClass.room}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                    <p className="text-gray-500 font-medium">No tienes clases próximas.</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* TARJETA 2: MI DESEMPEÑO */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          {/* Tarjeta de Promedio */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                 <TrendingUp className="text-green-600" size={20} />
               </div>
-              <h3 className="text-lg font-semibold text-gray-800">Mi Desempeño</h3>
+              <h3 className="text-lg font-semibold text-gray-800">Promedio Ponderado</h3>
             </div>
             
-            <div className="space-y-6">
-              {/* Promedio General */}
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-600 font-medium">Promedio Ponderado</span>
-                  <span className="font-bold text-2xl text-green-600">{stats.average || "0.0"}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div className="space-y-4">
+               <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-gray-900">{stats.average || "0.0"}</span>
+                  <span className="text-sm text-gray-500">/ 20.0</span>
+               </div>
+               
+               <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                   <div 
-                    className="bg-green-500 h-3 rounded-full transition-all duration-1000 ease-out" 
+                    className="bg-linear-to-r from-green-500 to-emerald-400 h-3 rounded-full transition-all duration-1000 ease-out" 
                     style={{ width: `${(parseFloat(stats.average || 0) / 20) * 100}%` }}
                   ></div>
-                </div>
-              </div>
-
-              {/* Cursos Matriculados */}
-              <div>
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <div className="flex flex-col">
-                        <span className="text-gray-500 text-xs uppercase font-bold tracking-wider">Cursos Matriculados</span>
-                        <span className="text-xl font-bold text-gray-800">{stats.coursesCount || 0}</span>
-                    </div>
-                    <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                        <FileText size={16} />
-                    </div>
-                </div>
-              </div>
+               </div>
+               <p className="text-xs text-gray-400">Calculado en base a notas registradas</p>
             </div>
+          </div>
+
+          {/* Tarjeta Resumen Cursos */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+             <div className="flex justify-between items-start">
+                <div>
+                   <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Carga Académica</p>
+                   <h3 className="text-2xl font-bold text-gray-800">{stats.coursesCount} Cursos</h3>
+                </div>
+                <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600">
+                   <FileText size={20} />
+                </div>
+             </div>
+             <div className="mt-6 pt-6 border-t border-gray-100 grid grid-cols-2 gap-4">
+                <div>
+                   <span className="block text-2xl font-bold text-gray-800">2025-B</span>
+                   <span className="text-xs text-gray-500">Semestre</span>
+                </div>
+                <div>
+                   <span className="block text-2xl font-bold text-green-600">Activo</span>
+                   <span className="text-xs text-gray-500">Estado</span>
+                </div>
+             </div>
           </div>
 
         </div>
