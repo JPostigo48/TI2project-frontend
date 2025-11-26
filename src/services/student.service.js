@@ -1,75 +1,49 @@
-// src/services/student.service.js
-
 import axiosClient from '../api/axiosClient';
 import ENDPOINTS from '../api/endpoints';
 import AuthService from './auth.service';
 
-// Mocks se importan para mantener compatibilidad con el modo mock.
+// Mocks
 import {
   mockGetStudentProfile,
   mockGetStudentSchedule,
   mockGetStudentGrades,
   mockGetAvailableLabs,
+  // ✅ Asegúrate de crear o exportar esto en tu archivo student.mock.js
+  // Si no tienes el mock aún, puedes comentar esta línea y el if(USE_MOCK) de abajo.
+  mockGetDashboardSummary, 
 } from '../mocks/student.mock';
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK_DATA !== 'false';
 
 class StudentService {
-  /**
-   * Obtener el perfil del estudiante autenticado.  En modo API se
-   * realiza una petición GET a `/users/:id`.  En modo mock se
-   * devuelve el objeto simulado. Si no hay usuario guardado se
-   * lanza un error.
-   */
   async getProfile() {
-    if (USE_MOCK) {
-      return await mockGetStudentProfile();
-    }
+    if (USE_MOCK) return await mockGetStudentProfile();
+    
     const user = AuthService.getCurrentUser();
-    if (!user) {
-      throw new Error('No hay usuario autenticado');
-    }
+    if (!user) throw new Error('No hay usuario autenticado');
+    
     const response = await axiosClient.get(`${ENDPOINTS.STUDENT.PROFILE}/${user.id}`);
     return response.data;
   }
 
-  /**
-   * Obtener el horario del estudiante.  El backend aún no expone un
-   * endpoint específico para horarios, por lo que se consulta `/courses`
-   * con el parámetro `studentId`. El backend puede devolver todos los
-   * cursos y se filtrarán en el servidor; de lo contrario, esta
-   * implementación se deberá ajustar cuando exista un endpoint más
-   * específico. En modo mock se devuelve el horario simulado.
-   */
   async getSchedule() {
-    if (USE_MOCK) {
-      return await mockGetStudentSchedule();
-    }
+    if (USE_MOCK) return await mockGetStudentSchedule();
+
     const user = AuthService.getCurrentUser();
-    if (!user) {
-      throw new Error('No hay usuario autenticado');
-    }
+    if (!user) throw new Error('No hay usuario autenticado');
+
     const response = await axiosClient.get(ENDPOINTS.STUDENT.SCHEDULE, {
       params: { studentId: user.id },
     });
     return response.data;
   }
 
-  /**
-   * Obtener las notas del estudiante. Se consulta `/grades` con el
-   * parámetro `studentId` para que el backend devuelva todas las
-   * evaluaciones y notas del alumno. Si `summary=true`, el backend
-   * devolverá estadísticas además de la lista. En modo mock se
-   * devuelven las notas simuladas.
-   */
   async getGrades({ summary = false } = {}) {
-    if (USE_MOCK) {
-      return await mockGetStudentGrades();
-    }
+    if (USE_MOCK) return await mockGetStudentGrades();
+
     const user = AuthService.getCurrentUser();
-    if (!user) {
-      throw new Error('No hay usuario autenticado');
-    }
+    if (!user) throw new Error('No hay usuario autenticado');
+
     const response = await axiosClient.get(ENDPOINTS.STUDENT.GRADES, {
       params: { studentId: user.id, summary },
     });
@@ -77,28 +51,44 @@ class StudentService {
   }
 
   /**
-   * Obtener los grupos de laboratorio disponibles.  Se puede filtrar
-   * por `courseCode` y/o `semester`.  Corresponde a `GET /labs/groups`.
+   * Obtener resumen para el Dashboard (Próxima clase y promedio).
+   * Corresponde a `GET /dashboard/student-summary`.
    */
-  async getAvailableLabs({ courseCode, semester } = {}) {
+  async getDashboardSummary() {
+    // 1. Manejo de Mock (Consistencia)
     if (USE_MOCK) {
-      return await mockGetAvailableLabs();
+      // Si no tienes este mock creado, comenta estas líneas o returnea un objeto dummy
+       if (typeof mockGetDashboardSummary === 'function') {
+           return await mockGetDashboardSummary();
+       } else {
+           console.warn("mockGetDashboardSummary no está implementado");
+           return { stats: { average: 0, coursesCount: 0 }, nextClass: null };
+       }
     }
+
+    // 2. Petición Real usando Endpoint centralizado
+    // Nota: No necesitamos enviar ID explícito porque el token en axiosClient identifica al usuario
+    const response = await axiosClient.get(ENDPOINTS.STUDENT.SUMMARY);
+    return response.data;
+  }
+
+  async getAvailableLabs({ courseCode, semester } = {}) {
+    if (USE_MOCK) return await mockGetAvailableLabs();
+
     const params = {};
     if (courseCode) params.course = courseCode;
     if (semester) params.semester = semester;
+    
     const response = await axiosClient.get(ENDPOINTS.STUDENT.LABS, { params });
     return response.data;
   }
 
   async enrollLab(courseCode, preferences) {
-    if (USE_MOCK) {
-      throw new Error('Inscripción de laboratorio no implementada en mocks');
-    }
+    if (USE_MOCK) throw new Error('Inscripción de laboratorio no implementada en mocks');
+
     const user = AuthService.getCurrentUser();
-    if (!user) {
-      throw new Error('No hay usuario autenticado');
-    }
+    if (!user) throw new Error('No hay usuario autenticado');
+
     const payload = { courseCode, preferences };
     const response = await axiosClient.post(ENDPOINTS.STUDENT.ENROLL, payload);
     return response.data;

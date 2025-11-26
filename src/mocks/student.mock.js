@@ -106,6 +106,19 @@ export const studentProfile = {
   ],
 };
 
+export const mockGetDashboardSummary = async () => {
+  return {
+    stats: { average: "15.5", coursesCount: 4 },
+    nextClass: {
+      courseName: "Arquitectura de Computadores (Mock)",
+      type: "Teoría",
+      room: "101",
+      day: "Hoy",
+      time: "10:00 - 12:00"
+    }
+  };
+};
+
 // Utilidades para calcular parciales y nota final
 function computePartialScore(partial, weights) {
   const c = Number(partial?.continuous ?? 0);

@@ -15,9 +15,6 @@ import {
   Circle,
 } from 'lucide-react';
 
-/**
- * Página de documentación y presentación del proyecto.
- */
 const ProjectDocs = () => {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState({
@@ -132,7 +129,6 @@ const ProjectDocs = () => {
     },
   ];
 
-  // Roadmap por fechas
   const roadmapTimeline = [
     {
       date: '5 de noviembre de 2025',
