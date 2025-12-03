@@ -1,218 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axiosClient from '../../api/axiosClient';
+import CourseSectionsManager from '../../components/shared/CoursesSectionsManager';
 
-// Componente hijo para mostrar y gestionar los grupos (sections) de un curso
-const CourseRow = ({ course, semesterId, onEditCourse }) => {
-  const [expanded, setExpanded] = useState(false);
-  const [creatingGroup, setCreatingGroup] = useState(false);
-  const [groupForm, setGroupForm] = useState({
-    type: 'theory',
-    group: '',
-    capacity: '',
-  });
-
-  const {
-    data: sections = [],
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ['courseSections', course._id, semesterId],
-    queryFn: async () => {
-      if (!semesterId) return [];
-      const res = await axiosClient.get(`/courses/${course._id}/sections`, {
-        params: { semester: semesterId },
-      });
-      return res.data;
-    },
-    enabled: expanded && !!semesterId,
-    staleTime: 1000 * 60 * 2,
-  });
-
-  const handleGroupInputChange = (e) => {
-    const { name, value } = e.target;
-    setGroupForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleCreateGroup = async (e) => {
-    e.preventDefault();
-    if (!semesterId) {
-      alert('Selecciona un semestre primero.');
-      return;
-    }
-    if (!groupForm.group.trim()) {
-      alert('Ingresa el nombre del grupo (por ej. A, B, 01).');
-      return;
-    }
-
-    setCreatingGroup(true);
-    try {
-      // NOTA: Este endpoint debe existir en el backend
-      // POST /api/sections { course, semester, type, group, capacity }
-      await axiosClient.post('/sections', {
-        course: course._id,
-        semester: semesterId,
-        type: groupForm.type,
-        group: groupForm.group.trim(),
-        capacity: groupForm.capacity ? Number(groupForm.capacity) : 0,
-      });
-      setGroupForm({ type: 'theory', group: '', capacity: '' });
-      await refetch();
-    } catch (err) {
-      alert(err.response?.data?.message || 'Error al crear grupo');
-    } finally {
-      setCreatingGroup(false);
-    }
-  };
-
-  const firstLineMeta = [];
-  if (course.year) firstLineMeta.push(`Año ${course.year}`);
-  if (course.semester) firstLineMeta.push(`Ciclo ${course.semester}`);
-  if (course.credits) firstLineMeta.push(`${course.credits} créditos`);
-
-  return (
-    <div className="border rounded-lg p-3 bg-white shadow-sm">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <div>
-          <p className="font-semibold text-gray-900">
-            {course.code} — {course.name}
-          </p>
-          {firstLineMeta.length > 0 && (
-            <p className="text-xs text-gray-500 mt-1">
-              {firstLineMeta.join(' · ')}
-            </p>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => onEditCourse(course)}
-            className="px-3 py-1 text-xs rounded border border-gray-300 text-gray-700 hover:bg-gray-50"
-          >
-            Editar curso
-          </button>
-          <button
-            type="button"
-            onClick={() => setExpanded((prev) => !prev)}
-            className="px-3 py-1 text-xs rounded bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
-            disabled={!semesterId}
-          >
-            {expanded ? 'Ocultar grupos' : 'Ver grupos del semestre'}
-          </button>
-        </div>
-      </div>
-
-      {expanded && (
-        <div className="mt-3 border-t border-gray-100 pt-3 space-y-3">
-          {/* Formulario de nuevo grupo */}
-          <form
-            onSubmit={handleCreateGroup}
-            className="space-y-2 bg-gray-50 p-3 rounded-md"
-          >
-            <p className="text-xs font-semibold text-gray-700 mb-1">
-              Nuevo grupo para este semestre
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              <select
-                name="type"
-                value={groupForm.type}
-                onChange={handleGroupInputChange}
-                className="border p-2 rounded text-sm"
-              >
-                <option value="theory">Teoría</option>
-                <option value="lab">Laboratorio</option>
-              </select>
-              <input
-                type="text"
-                name="group"
-                value={groupForm.group}
-                onChange={handleGroupInputChange}
-                placeholder="Grupo (p.ej. A, B, 01)"
-                className="border p-2 rounded text-sm"
-                required
-              />
-              <input
-                type="number"
-                name="capacity"
-                value={groupForm.capacity}
-                onChange={handleGroupInputChange}
-                placeholder="Capacidad (opcional)"
-                className="border p-2 rounded text-sm"
-                min={0}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={creatingGroup || !semesterId}
-              className="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
-            >
-              {creatingGroup ? 'Creando grupo...' : 'Agregar grupo'}
-            </button>
-          </form>
-
-          {/* Listado de grupos */}
-          {isLoading ? (
-            <p className="text-xs text-gray-500">Cargando grupos...</p>
-          ) : error ? (
-            <p className="text-xs text-red-600">
-              Error al cargar grupos de este curso.
-            </p>
-          ) : sections.length === 0 ? (
-            <p className="text-xs text-gray-500">
-              Este curso no tiene grupos registrados en el semestre seleccionado.
-            </p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 text-xs">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">
-                      Grupo
-                    </th>
-                    <th className="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">
-                      Tipo
-                    </th>
-                    <th className="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">
-                      Capacidad
-                    </th>
-                    <th className="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">
-                      Matriculados
-                    </th>
-                    <th className="px-3 py-2 text-left font-medium text-gray-500 uppercase tracking-wider">
-                      Docente
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {sections.map((section) => (
-                    <tr key={section._id}>
-                      <td className="px-3 py-2 whitespace-nowrap">
-                        {section.group}
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap capitalize">
-                        {section.type === 'lab' ? 'Laboratorio' : 'Teoría'}
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap">
-                        {section.capacity ?? 0}
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap">
-                        {section.enrolledCount ?? 0}
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap">
-                        {section.teacher?.name || 'Sin asignar'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
 
 /**
  * Gestión de semestres académicos.
@@ -230,7 +20,6 @@ const SemesterManagement = () => {
 
   const [creatingSemester, setCreatingSemester] = useState(false);
   const [editSemester, setEditSemester] = useState(null); // {_id, name, startDate, endDate, status}
-
   const [selectedSemesterId, setSelectedSemesterId] = useState('');
 
   // Formulario para crear cursos
@@ -239,6 +28,9 @@ const SemesterManagement = () => {
     name: '',
   });
   const [creatingCourse, setCreatingCourse] = useState(false);
+  const [showCourseForm, setShowCourseForm] = useState(false);
+  const [showSemesterForm, setShowSemesterForm] = useState(false);
+
 
   const today = useMemo(() => new Date(), []);
 
@@ -304,6 +96,36 @@ const SemesterManagement = () => {
     staleTime: 1000 * 60 * 2,
   });
 
+  // === React Query: Docentes ===
+  const {
+    data: teachers = [],
+    isLoading: loadingTeachers,
+    error: errorTeachers,
+  } = useQuery({
+    queryKey: ['teachers'],
+    queryFn: async () => {
+      const res = await axiosClient.get('/teacher');
+      return res.data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+
+    // === React Query: Rooms ===
+  const {
+    data: rooms = [],
+    isLoading: loadingRooms,
+    error: errorRooms,
+    refetch: refetchRooms,
+  } = useQuery({
+    queryKey: ['rooms'],
+    queryFn: async () => {
+      const res = await axiosClient.get('/rooms');
+      return res.data;
+    },
+    staleTime: 1000 * 60 * 2,
+  });
+
+
   // ==== Handlers Semestres ====
 
   const handleSemesterInputChange = (e) => {
@@ -326,6 +148,7 @@ const SemesterManagement = () => {
     try {
       await axiosClient.post('/semesters', semesterForm);
       setSemesterForm({ name: '', startDate: '', endDate: '' });
+      setShowSemesterForm(false);
       await refetchSemesters();
     } catch (err) {
       alert(err.response?.data?.message || 'Error al crear semestre');
@@ -388,6 +211,7 @@ const SemesterManagement = () => {
         name: courseForm.name.trim(),
       });
       setCourseForm({ code: '', name: '' });
+      setShowCourseForm(false);
       await refetchCourses();
     } catch (err) {
       alert(err.response?.data?.message || 'Error al crear curso');
@@ -431,67 +255,146 @@ const SemesterManagement = () => {
         )}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* PANEL IZQUIERDO: Semestres */}
-        <div className="space-y-4">
-          {/* Crear semestre */}
-          <form
-            onSubmit={handleCreateSemester}
-            className="space-y-4 bg-white p-4 shadow rounded"
-          >
-            <h2 className="text-lg font-semibold">Crear nuevo semestre</h2>
-            {activeSemester && (
-              <p className="text-xs text-red-600 mb-2">
-                Ya existe un semestre activo ({activeSemester.name}). Ajusta su
-                fecha de fin antes de crear uno nuevo.
-              </p>
+      <div className="space-y-6">
+        {/* PANEL: Semestres */}
+        <div className="bg-white p-4 shadow rounded space-y-4">
+          <h2 className="text-lg font-semibold">Semestres académicos</h2>
+
+          {/* Semestres existentes */}
+          <div className="border border-gray-100 rounded p-3">
+            <h3 className="text-md font-semibold mb-3">Semestres existentes</h3>
+            <ul className="space-y-2">
+              {semesters.map((sem) => {
+                const status = getSemesterStatus(sem);
+                const statusLabel =
+                  status === 'active'
+                    ? 'Activo'
+                    : status === 'future'
+                    ? 'Futuro'
+                    : 'Pasado';
+                const statusColor =
+                  status === 'active'
+                    ? 'bg-green-100 text-green-700'
+                    : status === 'future'
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'bg-gray-100 text-gray-600';
+
+                return (
+                  <li
+                    key={sem._id}
+                    className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 border-b pb-2 last:border-b-0"
+                  >
+                    <div>
+                      <p className="font-medium">{sem.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(sem.startDate).toLocaleDateString()} –{' '}
+                        {new Date(sem.endDate).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColor}`}
+                      >
+                        {statusLabel}
+                      </span>
+                      {(status === 'active' || status === 'future') && (
+                        <button
+                          type="button"
+                          onClick={() => openEditSemester(sem)}
+                          className="text-xs text-blue-600 hover:underline"
+                        >
+                          Editar fechas
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          {/* Crear semestre (bloquecito +) */}
+          <div className="border border-dashed border-gray-300 rounded p-3 bg-gray-50">
+            {showSemesterForm ? (
+              <form
+                onSubmit={handleCreateSemester}
+                className="space-y-4"
+              >
+                <h3 className="text-md font-semibold">Crear nuevo semestre</h3>
+                {activeSemester && (
+                  <p className="text-xs text-red-600 mb-2">
+                    Ya existe un semestre activo ({activeSemester.name}). Ajusta su
+                    fecha de fin antes de crear uno nuevo.
+                  </p>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <input
+                    type="text"
+                    name="name"
+                    value={semesterForm.name}
+                    onChange={handleSemesterInputChange}
+                    placeholder="Nombre (e.g., 2025-A)"
+                    className="border p-2 rounded"
+                    required
+                    disabled={!!activeSemester}
+                  />
+                  <input
+                    type="date"
+                    name="startDate"
+                    value={semesterForm.startDate}
+                    onChange={handleSemesterInputChange}
+                    className="border p-2 rounded"
+                    required
+                    disabled={!!activeSemester}
+                  />
+                  <input
+                    type="date"
+                    name="endDate"
+                    value={semesterForm.endDate}
+                    onChange={handleSemesterInputChange}
+                    className="border p-2 rounded"
+                    required
+                    disabled={!!activeSemester}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={creatingSemester || !!activeSemester}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 text-sm"
+                  >
+                    {creatingSemester ? 'Creando...' : 'Crear semestre'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowSemesterForm(false)}
+                    className="px-3 py-2 text-sm rounded border border-gray-300 text-gray-600 hover:bg-gray-100"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowSemesterForm(true)}
+                className="w-full text-xs text-gray-600 hover:text-gray-800 flex items-center justify-center py-4"
+              >
+                <span className="inline-flex items-center gap-1">
+                  <span className="text-base leading-none">+</span>
+                  <span>Crear nuevo semestre</span>
+                </span>
+              </button>
             )}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <input
-                type="text"
-                name="name"
-                value={semesterForm.name}
-                onChange={handleSemesterInputChange}
-                placeholder="Nombre (e.g., 2025-A)"
-                className="border p-2 rounded"
-                required
-                disabled={!!activeSemester}
-              />
-              <input
-                type="date"
-                name="startDate"
-                value={semesterForm.startDate}
-                onChange={handleSemesterInputChange}
-                className="border p-2 rounded"
-                required
-                disabled={!!activeSemester}
-              />
-              <input
-                type="date"
-                name="endDate"
-                value={semesterForm.endDate}
-                onChange={handleSemesterInputChange}
-                className="border p-2 rounded"
-                required
-                disabled={!!activeSemester}
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={creatingSemester || !!activeSemester}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-            >
-              {creatingSemester ? 'Creando...' : 'Crear semestre'}
-            </button>
-          </form>
+          </div>
 
           {/* Editar semestre activo / futuro */}
           {editSemester && (
             <form
               onSubmit={handleSaveSemesterDates}
-              className="space-y-3 bg-white p-4 shadow rounded border border-blue-100"
+              className="space-y-3 bg-blue-50/40 p-4 rounded border border-blue-100"
             >
-              <h2 className="text-lg font-semibold">
+              <h2 className="text-md font-semibold">
                 Editar fechas de {editSemester.name}{' '}
                 <span className="text-xs uppercase text-gray-500">
                   ({editSemester.status === 'active'
@@ -550,146 +453,129 @@ const SemesterManagement = () => {
               </div>
             </form>
           )}
-
-          {/* Listado de semestres */}
-          <div className="bg-white p-4 shadow rounded">
-            <h2 className="text-lg font-semibold mb-4">Semestres existentes</h2>
-            <ul className="space-y-2">
-              {semesters.map((sem) => {
-                const status = getSemesterStatus(sem);
-                const statusLabel =
-                  status === 'active'
-                    ? 'Activo'
-                    : status === 'future'
-                    ? 'Futuro'
-                    : 'Pasado';
-                const statusColor =
-                  status === 'active'
-                    ? 'bg-green-100 text-green-700'
-                    : status === 'future'
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-gray-100 text-gray-600';
-
-                return (
-                  <li
-                    key={sem._id}
-                    className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 border-b pb-2 last:border-b-0"
-                  >
-                    <div>
-                      <p className="font-medium">{sem.name}</p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(sem.startDate).toLocaleDateString()} –{' '}
-                        {new Date(sem.endDate).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-semibold ${statusColor}`}
-                      >
-                        {statusLabel}
-                      </span>
-                      {(status === 'active' || status === 'future') && (
-                        <button
-                          type="button"
-                          onClick={() => openEditSemester(sem)}
-                          className="text-xs text-blue-600 hover:underline"
-                        >
-                          Editar fechas
-                        </button>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
         </div>
 
-        {/* PANEL DERECHO: Cursos y grupos por semestre */}
-        <div className="space-y-4">
-          <div className="bg-white p-4 shadow rounded">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-3">
-              <div>
-                <h2 className="text-lg font-semibold">Cursos y grupos</h2>
-                <p className="text-xs text-gray-500">
-                  Elige un semestre y gestiona los grupos (teoría / laboratorio)
-                  de cada curso.
+
+
+        {/* PANEL: Cursos y grupos por semestre */}
+        <div className="bg-white p-4 shadow rounded space-y-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-1">
+            <div>
+              <h2 className="text-lg font-semibold">Cursos y grupos</h2>
+              <p className="text-xs text-gray-500">
+                Elige un semestre y gestiona los grupos (teoría / laboratorio)
+                de cada curso.
+              </p>
+              {loadingTeachers && (
+                <p className="text-[11px] text-gray-400">
+                  Cargando lista de docentes...
                 </p>
-              </div>
-              <div>
-                <select
-                  value={selectedSemesterId}
-                  onChange={(e) => setSelectedSemesterId(e.target.value)}
-                  className="border border-gray-300 rounded px-2 py-1 text-sm"
-                >
-                  {semesters.map((sem) => (
-                    <option key={sem._id} value={sem._id}>
-                      {sem.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              )}
+              {errorTeachers && (
+                <p className="text-[11px] text-red-500">
+                  Error al cargar docentes (verifica el endpoint /teachers).
+                </p>
+              )}
             </div>
-
-            {/* Formulario para crear curso base */}
-            <form
-              onSubmit={handleCreateCourse}
-              className="space-y-2 border-t border-gray-100 pt-3 mb-4"
-            >
-              <h3 className="text-sm font-semibold text-gray-700">
-                Nuevo curso en el catálogo
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input
-                  type="text"
-                  name="code"
-                  value={courseForm.code}
-                  onChange={handleCourseInputChange}
-                  placeholder="Código (e.g., CC101)"
-                  className="border p-2 rounded text-sm"
-                  required
-                />
-                <input
-                  type="text"
-                  name="name"
-                  value={courseForm.name}
-                  onChange={handleCourseInputChange}
-                  placeholder="Nombre del curso"
-                  className="border p-2 rounded text-sm"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={creatingCourse}
-                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 text-sm"
+            <div>
+              <select
+                value={selectedSemesterId}
+                onChange={(e) => setSelectedSemesterId(e.target.value)}
+                className="border border-gray-300 rounded px-2 py-1 text-sm"
               >
-                {creatingCourse ? 'Creando curso...' : 'Crear curso'}
-              </button>
-            </form>
-
-            {/* Listado de cursos + grupos */}
-            {loadingCourses ? (
-              <p className="text-sm text-gray-500">Cargando cursos...</p>
-            ) : errorCourses ? (
-              <p className="text-sm text-red-600">
-                Error al cargar el catálogo de cursos.
-              </p>
-            ) : courses.length === 0 ? (
-              <p className="text-sm text-gray-500">
-                Aún no hay cursos registrados.
-              </p>
-            ) : (
-              <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
-                {courses.map((course) => (
-                  <CourseRow
-                    key={course._id}
-                    course={course}
-                    semesterId={selectedSemesterId}
-                    onEditCourse={handleEditCourse}
-                  />
+                {semesters.map((sem) => (
+                  <option key={sem._id} value={sem._id}>
+                    {sem.name}
+                  </option>
                 ))}
-              </div>
+              </select>
+            </div>
+          </div>
+
+          {/* Listado de cursos + grupos */}
+          {loadingCourses ? (
+            <p className="text-sm text-gray-500">Cargando cursos...</p>
+          ) : errorCourses ? (
+            <p className="text-sm text-red-600">
+              Error al cargar el catálogo de cursos.
+            </p>
+          ) : courses.length === 0 ? (
+            <p className="text-sm text-gray-500">
+              Aún no hay cursos registrados.
+            </p>
+          ) : (
+            <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
+              {courses.map((course) => (
+                <CourseSectionsManager
+                  key={course._id}
+                  course={course}
+                  semesterId={selectedSemesterId}
+                  onEditCourse={handleEditCourse}
+                  teachers={teachers}
+                  rooms={rooms}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Bloquecito "+" para crear nuevo curso */}
+          <div className="border border-dashed border-gray-300 rounded p-3 bg-gray-50">
+            {showCourseForm ? (
+              <form
+                onSubmit={handleCreateCourse}
+                className="space-y-2"
+              >
+                <h3 className="text-sm font-semibold text-gray-700">
+                  Nuevo curso en el catálogo
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    name="code"
+                    value={courseForm.code}
+                    onChange={handleCourseInputChange}
+                    placeholder="Código (e.g., CC101)"
+                    className="border p-2 rounded text-sm"
+                    required
+                  />
+                  <input
+                    type="text"
+                    name="name"
+                    value={courseForm.name}
+                    onChange={handleCourseInputChange}
+                    placeholder="Nombre del curso"
+                    className="border p-2 rounded text-sm"
+                    required
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={creatingCourse}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 text-sm"
+                  >
+                    {creatingCourse ? 'Creando curso...' : 'Crear curso'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowCourseForm(false)}
+                    className="px-3 py-2 text-sm rounded border border-gray-300 text-gray-600 hover:bg-gray-100"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowCourseForm(true)}
+                className="w-full text-xs text-gray-600 hover:text-gray-800 flex items-center justify-center py-2"
+              >
+                <span className="inline-flex items-center gap-1">
+                  <span className="text-base leading-none">+</span>
+                  <span>Nuevo curso en el catálogo</span>
+                </span>
+              </button>
             )}
           </div>
         </div>
