@@ -20,6 +20,12 @@ import GradeManagement from '../pages/teacher/GradeManagement';
 import TeacherSchedule from '../pages/teacher/TeacherSchedule';
 import RoomReservation from '../pages/teacher/RoomReservation';
 
+// Páginas de administrador
+import AdminDashboard from '../pages/admin/AdminDashboard';
+import UserManagement from '../pages/admin/UserManagement';
+import SemesterManagement from '../pages/admin/SemesterManagement';
+import RoomManagement from '../pages/admin/RoomManagement';
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -115,6 +121,47 @@ const AppRoutes = () => {
           <ProtectedRoute allowedRoles={[ROLES.TEACHER]}>
             <Layout>
               <RoomReservation />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      {/* Administrador */}
+      <Route
+        path={ROUTES.ADMIN_DASHBOARD}
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+            <Layout>
+              <AdminDashboard />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_USERS}
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+            <Layout>
+              <UserManagement />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_SEMESTERS}
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.SECRETARY]}>
+            <Layout>
+              <SemesterManagement />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_ROOMS}
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+            <Layout>
+              <RoomManagement />
             </Layout>
           </ProtectedRoute>
         }

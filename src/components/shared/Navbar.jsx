@@ -30,6 +30,7 @@ const Navbar = () => {
         { path: ROUTES.STUDENT_LABS, label: 'Laboratorios', icon: GraduationCap },
       ];
     }
+
     if (user?.role === ROLES.TEACHER) {
       return [
         { path: ROUTES.TEACHER_DASHBOARD, label: 'Inicio', icon: Home },
@@ -39,6 +40,27 @@ const Navbar = () => {
         { path: ROUTES.TEACHER_ROOMS, label: 'Ambientes', icon: DoorOpen },
       ];
     }
+
+    // Menú para SECRETARÍA / ACADÉMICO
+    if (user?.role === ROLES.SECRETARY) {
+      return [
+        { path: ROUTES.SECRETARY_DASHBOARD, label: 'Inicio', icon: Home },
+        { path: ROUTES.SECRETARY_UPLOADS, label: 'Carga de datos', icon: ClipboardList },
+        { path: ROUTES.SECRETARY_LABS, label: 'Laboratorios', icon: GraduationCap },
+        { path: ROUTES.SECRETARY_REPORTS, label: 'Reportes', icon: FileText },
+      ];
+    }
+
+    // Menú para ADMINISTRADOR
+    if (user?.role === ROLES.ADMIN) {
+      return [
+        { path: ROUTES.ADMIN_DASHBOARD, label: 'Inicio', icon: Home },
+        { path: ROUTES.ADMIN_USERS, label: 'Usuarios', icon: User },
+        { path: ROUTES.ADMIN_SEMESTERS, label: 'Semestres', icon: Calendar },
+        { path: ROUTES.ADMIN_ROOMS, label: 'Aulas', icon: DoorOpen },
+      ];
+    }
+
     return [];
   };
 

@@ -3,6 +3,8 @@
 export const ROLES = {
   STUDENT: 'student',
   TEACHER: 'teacher',
+  ADMIN: 'admin',
+  SECRETARY: 'secretary',
 };
 
 export const ROUTES = {
@@ -19,6 +21,12 @@ export const ROUTES = {
   TEACHER_GRADES: '/docente/notas',
   TEACHER_SCHEDULE: '/docente/horario',
   TEACHER_ROOMS: '/docente/ambientes',
+  // Administrador
+  ADMIN_DASHBOARD: '/admin',
+  ADMIN_USERS: '/admin/usuarios',
+  ADMIN_SEMESTERS: '/admin/semestres',
+  ADMIN_ROOMS: '/admin/aulas',
+  ADMIN_SETTINGS: '/admin/configuracion',
 };
 
 // Días de la semana en español para ordenar horarios

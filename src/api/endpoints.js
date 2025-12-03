@@ -22,6 +22,16 @@ const ENDPOINTS = {
     RESERVE_ROOM: '/rooms/reserve',
     ROOM_RESERVATIONS: '/rooms/reservations',
   },
+  ADMIN: {
+    DASHBOARD: '/admin/dashboard',
+    USERS: '/admin/users',
+    SETTINGS: '/admin/settings',
+  },
+  COMMON: {
+    USERS: '/users',
+    SEMESTERS: '/semesters',
+    ROOMS: '/rooms',
+  },
 };
 
 export default ENDPOINTS;

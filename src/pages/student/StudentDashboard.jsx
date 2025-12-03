@@ -5,11 +5,10 @@ import { useAuth } from '../../context/AuthContext';
 import { Calendar, FileText, GraduationCap, TrendingUp } from 'lucide-react';
 import { ROUTES } from '../../utils/constants';
 
-// Servicios y Componentes
 import StudentService from '../../services/student.service';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import ErrorMessage from '../../components/shared/ErrorMessage';
-import NextClassCard from '../../components/shared/NextClassCard'; // <--- IMPORTADO
+import NextClassCard from '../../components/shared/NextClassCard';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -34,19 +33,15 @@ const StudentDashboard = () => {
     queryFn: () => StudentService.getSchedule(),
   });
 
-  // 3. Transformar el horario a lista plana (Igual que en TeacherDashboard)
+  // 3. Transformar el horario a lista plana
   const flatSchedule = useMemo(() => {
     if (!Array.isArray(schedule)) return [];
     
-    // Mapeamos para asegurar compatibilidad total con NextClassCard
-    // (Aunque tu controlador ya devuelve casi todo listo)
     return schedule.map(block => ({
         day: block.day,
         startHour: Number(block.startHour),
         duration: Number(block.duration || 1),
-        room: block.room, // Puede ser string o objeto
-        
-        // Mapeo de nombres para la tarjeta
+        room: block.room,
         courseName: block.courseName || 'Curso',
         code: block.courseCode,
         group: block.group,
@@ -98,7 +93,7 @@ const StudentDashboard = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       
-      {/* HEADER CON GRID (Igual que en Docente) */}
+      {/* HEADER CON GRID */}
       <div className="grid lg:grid-cols-3 gap-6">
         
         {/* BIENVENIDA */}
@@ -114,7 +109,7 @@ const StudentDashboard = () => {
           </div>
         </div>
 
-        {/* TARJETA PRÓXIMA CLASE (Componente Compartido) */}
+        {/* TARJETA PRÓXIMA CLASE */}
         <div className="lg:col-span-1 h-full">
            <NextClassCard schedule={flatSchedule} />
         </div>
@@ -141,7 +136,7 @@ const StudentDashboard = () => {
         </div>
       </div>
 
-      {/* RESUMEN DE DESEMPEÑO (Solo dejamos este porque próxima clase ya está arriba) */}
+      {/* RESUMEN DE DESEMPEÑO */}
       <div>
         <h2 className="text-xl font-bold text-gray-800 mb-4">Mi Desempeño</h2>
         <div className="grid md:grid-cols-2 gap-6">

@@ -45,12 +45,21 @@ export const AuthProvider = ({ children }) => {
         AuthService.saveSession(userData, token);
         setUser(userData);
         setIsAuthenticated(true);
-        if (userData.role === ROLES.STUDENT) {
-          navigate(ROUTES.STUDENT_DASHBOARD, { replace: true });
-        } else if (userData.role === ROLES.TEACHER) {
-          navigate(ROUTES.TEACHER_DASHBOARD, { replace: true });
-        } else {
-          navigate('/', { replace: true });
+        switch (userData.role) {
+          case ROLES.STUDENT:
+            navigate(ROUTES.STUDENT_DASHBOARD, { replace: true });
+            break;
+          case ROLES.TEACHER:
+            navigate(ROUTES.TEACHER_DASHBOARD, { replace: true });
+            break;
+          case ROLES.ADMIN:
+            navigate(ROUTES.ADMIN_DASHBOARD, { replace: true });
+            break;
+          case ROLES.SECRETARY:
+            navigate(ROUTES.ADMIN_SEMESTERS, { replace: true });
+            break;
+          default:
+            navigate(ROUTES.HOME, { replace: true });
         }
         return { success: true };
       }
