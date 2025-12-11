@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Clock, MapPin, Radio, Calendar, ArrowRight } from 'lucide-react';
-import { getNextOrCurrentClass } from '../../utils/helpers';
+import { getNextOrCurrentClass } from '../../utils/scheduleUtils';
 import { DAYS } from '../../utils/constants';
 
 const NextClassCard = ({ schedule = [] }) => {

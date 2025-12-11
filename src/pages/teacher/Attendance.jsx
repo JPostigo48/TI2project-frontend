@@ -13,7 +13,7 @@ import {
 import TeacherService from '../../services/teacher.service';
 import LoadingSpinner from '../../components/shared/LoadingSpinner';
 import ErrorMessage from '../../components/shared/ErrorMessage';
-import { getCurrentAcademicContext } from '../../utils/helpers';
+import { getCurrentAcademicContext } from '../../utils/scheduleUtils';
 
 const TeacherAttendance = () => {
   const qc = useQueryClient();

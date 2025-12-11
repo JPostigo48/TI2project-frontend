@@ -56,6 +56,12 @@ export const ACADEMIC_HOURS = {
   15: { label: '15ta', start: '19:20', end: '20:10' }
 };
 
+export const ACADEMIC_HOUR_OPTIONS = Object.entries(ACADEMIC_HOURS).map(
+  ([value, info]) => ({
+    value: Number(value),
+    label: info.label,
+  })
+);
 
 export const DAY_INDEX = {
   'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 

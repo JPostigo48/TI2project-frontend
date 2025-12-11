@@ -3,16 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import AuthService from '../services/auth.service';
 import { ROLES, ROUTES } from '../utils/constants';
 
-/**
- * Contexto de autenticación
- *
- * Esta implementación utiliza el servicio de autenticación para
- * iniciar/cerrar sesión y persiste la sesión en localStorage.  Si
- * `VITE_USE_MOCK_DATA` está en `true` usará los mocks provistos en
- * `src/mocks/auth.mock.js`.  Se expone el usuario autenticado, el
- * estado de autenticación y funciones para login y logout.
- */
-
 const AuthContext = createContext({
   user: null,
   isAuthenticated: false,

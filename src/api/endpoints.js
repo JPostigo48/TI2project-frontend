@@ -26,6 +26,7 @@ const ENDPOINTS = {
     DASHBOARD: '/admin/dashboard',
     USERS: '/admin/users',
     SETTINGS: '/admin/settings',
+    SECTIONS_IN_COURSE: (id) => `/courses/${id}/sections`,
   },
   COMMON: {
     USERS: '/users',
