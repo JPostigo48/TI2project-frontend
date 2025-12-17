@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { ROLES, ROUTES } from '../../utils/constants';
+import { useAuth } from '../../../context/AuthContext';
+import { ROLES, ROUTES } from '../../../utils/constants';
 import {
   Home,
   Calendar,
@@ -27,6 +27,7 @@ const Navbar = () => {
         { path: ROUTES.STUDENT_DASHBOARD, label: 'Inicio', icon: Home },
         { path: ROUTES.STUDENT_SCHEDULE, label: 'Mi Horario', icon: Calendar },
         { path: ROUTES.STUDENT_GRADES, label: 'Mis Notas', icon: FileText },
+        { path: ROUTES.STUDENT_COURSES, label: 'Mis Cursos', icon: FileText },
         { path: ROUTES.STUDENT_LABS, label: 'Laboratorios', icon: GraduationCap },
       ];
     }

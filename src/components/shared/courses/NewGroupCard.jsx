@@ -1,5 +1,5 @@
 import React from 'react';
-import SectionSchedulesFields from './SectionScheduleFields';
+import SectionSchedulesFields from '../schedule/SectionScheduleFields';
 
 const NewGroupCard = ({
   semesterId,
@@ -21,7 +21,7 @@ const NewGroupCard = ({
   };
 
   return (
-    <div className="border border-dashed border-gray-300 rounded-md bg-gray-50 p-3">
+    <div className="space-y-2">
       {showGroupForm ? (
         <form onSubmit={onSubmit} className="space-y-3">
           <p className="text-xs font-semibold text-gray-700 mb-1">
@@ -84,20 +84,20 @@ const NewGroupCard = ({
           />
 
           {/* Botones finales */}
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={creatingGroup || !semesterId}
-              className="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
-            >
-              {creatingGroup ? 'Creando grupo...' : 'Agregar grupo'}
-            </button>
+          <div className="flex justify-end gap-2">
             <button
               type="button"
               onClick={onCancel}
-              className="px-3 py-1 text-xs rounded border border-gray-300 text-gray-600 hover:bg-gray-100"
+              className="w-20 px-3 py-1 text-xs rounded border border-gray-300 text-gray-600 hover:bg-gray-100"
             >
               Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={creatingGroup || !semesterId}
+              className="w-30 px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {creatingGroup ? 'Creando grupo...' : 'Agregar grupo'}
             </button>
           </div>
         </form>

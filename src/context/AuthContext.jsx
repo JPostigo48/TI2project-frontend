@@ -59,7 +59,25 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  /** Cerrar sesión y limpiar almacenamiento. */
+  const redirectByRole = (role) => {
+    switch (role) {
+      case ROLES.STUDENT:
+        navigate(ROUTES.STUDENT_DASHBOARD);
+        break;
+      case ROLES.TEACHER:
+        navigate(ROUTES.TEACHER_DASHBOARD);
+        break;
+      case ROLES.ADMIN:
+        navigate(ROUTES.ADMIN_DASHBOARD);
+        break;
+      case ROLES.SECRETARY:
+        navigate(ROUTES.SECRETARY_DASHBOARD);
+        break;
+      default:
+        navigate(ROUTES.HOME);
+    }
+  };
+
   const logout = () => {
     AuthService.clearSession();
     setUser(null);
@@ -68,11 +86,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, loading, login, logout }}>
+    <AuthContext.Provider value={{
+        user,
+        isAuthenticated,
+        loading,
+        login,
+        logout,
+        redirectByRole
+    }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-/** Hook para consumir el contexto de autenticación */
 export const useAuth = () => useContext(AuthContext);

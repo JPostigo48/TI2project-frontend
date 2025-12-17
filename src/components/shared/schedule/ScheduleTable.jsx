@@ -1,5 +1,5 @@
 import React from 'react';
-import { DAYS, ACADEMIC_HOURS } from '../../utils/constants';
+import { DAYS, ACADEMIC_HOURS } from '../../../utils/constants';
 
 export default function ScheduleTable({ blocks = [] }) {
   const dayKeys = Object.keys(DAYS);

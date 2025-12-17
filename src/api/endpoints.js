@@ -23,14 +23,32 @@ const ENDPOINTS = {
     ROOM_RESERVATIONS: '/rooms/reservations',
   },
   ADMIN: {
+    // adminRoutes
     DASHBOARD: '/admin/dashboard',
     USERS: '/admin/users',
+    USERS_RESET_PASSWORD: (id) => `/admin/users/${id}/reset-password`,
+
+    // authRoutes
+    REGISTER_USER: '/auth/register',
+
     SETTINGS: '/admin/settings',
     SECTIONS_IN_COURSE: (id) => `/courses/${id}/sections`,
   },
   COMMON: {
     USERS: '/users',
-    SEMESTERS: '/semesters',
+
+    SEMESTERS: '/semester/list',
+    SEMESTER_CREATE: '/semester/create',
+    SEMESTER_EDIT: (id) => `/semester/${id}/edit`,
+
+    SEMESTER_LAB_OPEN: (id) => `/semester/${id}/labs/open`,
+    SEMESTER_LAB_CLOSE: (id) => `/semester/${id}/labs/close`,
+    SEMESTER_LAB_PREPROCESS: (id) => `/semester/${id}/labs/preprocess`,
+    SEMESTER_LAB_PROCESS: (id) => `/semester/${id}/labs/process`,
+    SEMESTER_LAB_RESULTS: (id) => `/semester/${id}/labs/results`,
+
+    COURSE_EDIT: (id) => `/sections/${id}/edit`,
+
     ROOMS: '/rooms',
   },
 };

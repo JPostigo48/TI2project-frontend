@@ -1,5 +1,5 @@
 import React from 'react';
-import SectionSchedulesFields from './SectionScheduleFields';
+import SectionSchedulesFields from '../schedule/SectionScheduleFields';
 
 const EditSectionForm = ({
   editingSection,
@@ -21,10 +21,7 @@ const EditSectionForm = ({
   };
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="mt-3 bg-gray-50 p-3 rounded-md border border-gray-200 space-y-3"
-    >
+    <form onSubmit={onSubmit} className="space-y-3">
       <p className="text-xs font-semibold text-gray-700">
         Editando grupo {editingSection.group}
       </p>
@@ -84,13 +81,13 @@ const EditSectionForm = ({
         <button
           type="button"
           onClick={onCancel}
-          className="px-3 py-1 text-xs rounded border border-gray-300 text-gray-600 hover:bg-gray-100"
+          className="w-20 px-3 py-1 text-xs rounded border border-gray-300 text-gray-600 hover:bg-gray-100"
         >
           Cancelar
         </button>
         <button
           type="submit"
-          className="px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700"
+          className="w-30 px-3 py-1 text-xs bg-indigo-600 text-white rounded hover:bg-indigo-700"
         >
           Guardar cambios
         </button>

@@ -1,10 +1,6 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 
-/**
- * Componente de carga reutilizable.
- * Muestra un spinner animado y un mensaje opcional mientras se cargan datos.
- */
 const LoadingSpinner = ({ message }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-[200px]">

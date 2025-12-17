@@ -3,9 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Calendar, Clock, AlertTriangle } from 'lucide-react';
 
 import TeacherService from '../../services/teacher.service';
-import ScheduleTable from '../../components/shared/ScheduleTable';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
-import ErrorMessage from '../../components/shared/ErrorMessage';
+import ScheduleTable from '../../components/shared/schedule/ScheduleTable';
+import LoadingSpinner from '../../components/shared/layout/LoadingSpinner';
+import ErrorMessage from '../../components/shared/layout/ErrorMessage';
 
 const TeacherSchedule = () => {
   const { data: sections = [], isLoading, error } = useQuery({
@@ -18,14 +18,12 @@ const TeacherSchedule = () => {
     const blocks = [];
 
     sections.forEach((section) => {
-      // Validación defensiva: si la sección es nula, la saltamos
       if (!section) return;
 
       if (Array.isArray(section.schedule)) {
         section.schedule.forEach((slot) => {
           if (!slot) return;
 
-          // Determinamos el tipo para el color (Backend debe mandar 'reservation' o 'theory'/'lab')
           const sectionType = section.type || 'theory';
 
           blocks.push({

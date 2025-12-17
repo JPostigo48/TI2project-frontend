@@ -14,6 +14,7 @@ export const ROUTES = {
   STUDENT_DASHBOARD: '/estudiante',
   STUDENT_SCHEDULE: '/estudiante/horario',
   STUDENT_GRADES: '/estudiante/notas',
+  STUDENT_COURSES: '/estudiante/cursos',
   STUDENT_LABS: '/estudiante/laboratorios',
   // Rutas de docente
   TEACHER_DASHBOARD: '/docente',

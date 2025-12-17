@@ -1,5 +1,5 @@
 import React from 'react';
-import { getMainBlockFromSection, getScheduleLabel, normalizeBlock } from '../../utils/scheduleUtils';
+import { getMainBlockFromSection, getScheduleLabel, normalizeBlock } from '../../../utils/scheduleUtils';
 
 const SectionScheduleDetails = ({ section, roomLabel }) => {
   const hasSchedule =

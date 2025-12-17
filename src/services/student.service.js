@@ -101,6 +101,16 @@ class StudentService {
     return response.data;
   }
 
+  async getMyCourses() {
+    const res = await axiosClient.get('/student/courses');
+    return res.data || [];
+  }
+
+  async getCourseAttendance(courseId) {
+    const res = await axiosClient.get(`/student/attendance/${courseId}`);
+    return res.data;
+  }
+
 }
 
 export default new StudentService();

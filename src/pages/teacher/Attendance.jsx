@@ -11,8 +11,8 @@ import {
 } from 'lucide-react';
 
 import TeacherService from '../../services/teacher.service';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
-import ErrorMessage from '../../components/shared/ErrorMessage';
+import LoadingSpinner from '../../components/shared/layout/LoadingSpinner';
+import ErrorMessage from '../../components/shared/layout/ErrorMessage';
 import { getCurrentAcademicContext } from '../../utils/scheduleUtils';
 
 const TeacherAttendance = () => {

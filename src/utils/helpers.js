@@ -17,3 +17,11 @@ export function calculateStats(numbers) {
   };
 }
 
+// Evita el -1 día por zona horaria
+export const formatDateUTC = (isoString) => {
+  if (!isoString) return '';
+  return new Date(isoString).toLocaleDateString('es-PE', {
+    timeZone: 'UTC',
+  });
+};
+

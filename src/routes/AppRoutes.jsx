@@ -2,7 +2,7 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ROUTES, ROLES } from '../utils/constants';
 import ProtectedRoute from './ProtectedRoute';
-import Layout from '../components/shared/Layout';
+import Layout from '../components/shared/layout/Layout';
 
 import ProjectDocs from '../pages/ProjectDocs';
 import Login from '../pages/Login';
@@ -25,6 +25,8 @@ import AdminDashboard from '../pages/admin/AdminDashboard';
 import UserManagement from '../pages/admin/UserManagement';
 import SemesterManagement from '../pages/admin/SemesterManagement';
 import RoomManagement from '../pages/admin/RoomManagement';
+import NotFound from '../pages/NotFound';
+import StudentCourses from '../pages/student/StudentCourses';
 
 const AppRoutes = () => {
   return (
@@ -60,6 +62,16 @@ const AppRoutes = () => {
           <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
             <Layout>
               <StudentGrades />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path={ROUTES.STUDENT_COURSES}
+        element={
+          <ProtectedRoute allowedRoles={[ROLES.STUDENT]}>
+            <Layout>
+              <StudentCourses />
             </Layout>
           </ProtectedRoute>
         }
@@ -170,15 +182,7 @@ const AppRoutes = () => {
       <Route
         path="*"
         element={
-          <div className="min-h-screen flex items-center justify-center bg-gray-50">
-            <div className="text-center">
-              <h1 className="text-6xl font-bold text-gray-800 mb-4">404</h1>
-              <p className="text-gray-600 mb-6">Página no encontrada</p>
-              <a href="/" className="text-blue-600 hover:underline">
-                Volver al inicio
-              </a>
-            </div>
-          </div>
+          <NotFound/>
         }
       />
     </Routes>

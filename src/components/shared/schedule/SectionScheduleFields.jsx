@@ -1,6 +1,6 @@
 import React from 'react';
-import { ACADEMIC_HOUR_OPTIONS } from '../../utils/constants';
-import { getTimeRangeFromBlocks } from '../../utils/scheduleUtils';
+import { ACADEMIC_HOUR_OPTIONS } from '../../../utils/constants';
+import { getTimeRangeFromBlocks } from '../../../utils/scheduleUtils';
 
 const EMPTY_SCHEDULE = { dayOfWeek: '', startBlock: '', endBlock: '', room: '' };
 
@@ -68,7 +68,7 @@ const SectionSchedulesFields = ({ schedules = [], rooms = [], onChangeSchedules 
         return (
           <div
             key={index}
-            className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end border border-gray-200 rounded-md p-2 bg-white"
+            className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end border border-gray-200 rounded-md p-2"
           >
             {/* Día */}
             <div className="flex flex-col gap-1">
@@ -126,7 +126,7 @@ const SectionSchedulesFields = ({ schedules = [], rooms = [], onChangeSchedules 
             <input
               type="text"
               readOnly
-              className="border p-2 rounded bg-gray-100 text-gray-700 text-xs md:text-sm text-center font-medium"
+              className="border p-2 rounded bg-gray-100/80 text-gray-700 text-xs md:text-sm text-center font-medium"
               value={
                 getTimeRangeFromBlocks(
                   schedule.startBlock,

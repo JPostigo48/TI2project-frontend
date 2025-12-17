@@ -6,8 +6,8 @@ import { Calendar, FileText, GraduationCap, TrendingUp } from 'lucide-react';
 import { ROUTES } from '../../utils/constants';
 
 import StudentService from '../../services/student.service';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
-import ErrorMessage from '../../components/shared/ErrorMessage';
+import LoadingSpinner from '../../components/shared/layout/LoadingSpinner';
+import ErrorMessage from '../../components/shared/layout/ErrorMessage';
 import NextClassCard from '../../components/shared/NextClassCard';
 
 const StudentDashboard = () => {
@@ -88,8 +88,6 @@ const StudentDashboard = () => {
   // Datos seguros
   const { stats } = dashboardData || { stats: { average: 0, coursesCount: 0 } };
   
-  console.log("Horario Aplanado:", flatSchedule);
-  console.log("Hora actual del sistema:", new Date().toLocaleTimeString());
   return (
     <div className="space-y-8 animate-fade-in">
       

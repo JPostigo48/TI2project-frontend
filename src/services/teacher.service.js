@@ -131,6 +131,11 @@ class TeacherService {
     return response.data;
   }
 
+  async setPartialGrades(payload) {
+    // payload: { section, studentId, partial, continuous, exam }
+    return axiosClient.post('/grades/partial', payload);
+  }
+
   async setSubstitutive(payload) {
     if (USE_MOCK) return await mockSetTeacherSubstitutive(payload);
     const response = await axiosClient.post(ENDPOINTS.TEACHER.UPDATE_GRADE, payload);
@@ -184,6 +189,14 @@ class TeacherService {
     const results = await Promise.all(promises);
     return results.flat();
   }
+
+  // services/teacher.service.js
+  async setSubstitutive(payload) {
+    // payload: { section, studentId, value }
+    const res = await axiosClient.post('/grades/substitutive', payload);
+    return res.data;
+  }
+
 }
 
 export default new TeacherService();

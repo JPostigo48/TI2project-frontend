@@ -1,8 +1,8 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import StudentService from '../../services/student.service';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
-import ErrorMessage from '../../components/shared/ErrorMessage';
+import LoadingSpinner from '../../components/shared/layout/LoadingSpinner';
+import ErrorMessage from '../../components/shared/layout/ErrorMessage';
 import { calculateStats } from '../../utils/helpers';
 
 const StudentGrades = () => {

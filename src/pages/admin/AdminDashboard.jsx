@@ -6,8 +6,8 @@ import { Users, CalendarDays, Building2, BarChart3 } from 'lucide-react';
 import { ROUTES } from '../../utils/constants';
 
 import AdminService from '../../services/admin.service';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
-import ErrorMessage from '../../components/shared/ErrorMessage';
+import LoadingSpinner from '../../components/shared/layout/LoadingSpinner';
+import ErrorMessage from '../../components/shared/layout/ErrorMessage';
 
 const AdminDashboard = () => {
   const { user } = useAuth();

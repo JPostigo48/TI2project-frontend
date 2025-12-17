@@ -1,15 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axiosClient from '../../api/axiosClient';
-import ScheduleTable from '../../components/shared/ScheduleTable';
+import ScheduleTable from '../../components/shared/schedule/ScheduleTable';
 
-/**
- * Gestión de aulas.
- * - Lista y creación de aulas.
- * - Permite seleccionar un aula y ver su horario de ocupación
- *   (cursos regulares + reservas de docentes) usando ScheduleTable.
- * Solo accesible por administrador.
- */
 const RoomManagement = () => {
   const [form, setForm] = useState({ name: '', code: '', capacity: '' });
   const [creating, setCreating] = useState(false);

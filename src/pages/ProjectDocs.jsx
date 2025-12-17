@@ -19,6 +19,7 @@ import {
   Server,
   Layout
 } from 'lucide-react';
+import ENDPOINTS from '../api/endpoints';
 
 // --- ESTRUCTURA DEL FRONTEND  ---
 const frontendStructure = {
@@ -537,8 +538,8 @@ const apiSections = [
         description: 'Crear un nuevo semestre (sin superposición con otro activo).',
       },
       {
-        method: 'PUT',
-        path: '/api/semesters/:id',
+        method: 'POST',
+        path: `/api${ENDPOINTS.COMMON.SEMESTER_EDIT(":id")}`,
         roles: 'admin / secretaría',
         description: 'Actualizar fechas de inicio/fin de un semestre activo o futuro.',
       },
@@ -1086,29 +1087,32 @@ const ProjectDocs = () => {
               {
                 name: 'Frontend – Sistema Académico UNSA',
                 type: 'Frontend React',
-                url: 'https://github.com/tu-usuario/sistema-academico-frontend',
+                url: 'https://github.com/JPostigo48/TI2project-frontend.git',
                 description:
                   'SPA en React 18 + Vite con React Router, React Query y Tailwind, enfocada en paneles por rol (alumno, docente, admin).',
                 tech: 'React, Vite, React Router, React Query, Tailwind CSS',
                 source: 'GitHub',
+                action: 'Ver Repositorio'
               },
               {
                 name: 'Backend – API Académica UNSA',
                 type: 'Backend Node/Express',
-                url: 'https://github.com/tu-usuario/sistema-academico-backend',
+                url: 'https://github.com/JPostigo48/TI2project-backend.git',
                 description:
                   'API REST en Node.js/Express con JWT, Mongoose y arquitectura en capas para manejar usuarios, cursos, secciones y reservas.',
                 tech: 'Node.js, Express, MongoDB Atlas, Mongoose, JWT',
                 source: 'GitHub',
+                action: 'Ver Repositorio'
               },
               {
                 name: 'Infraestructura & Docs',
                 type: 'Infraestructura / Docs',
-                url: 'https://https://sistema-academico-sooty.vercel.app/',
+                url: 'https://sistema-academico-sooty.vercel.app/',
                 description:
                   'Documentación técnica y notas de arquitectura del sistema.',
                 tech: 'Vercel, Documentación',
                 source: 'Web',
+                action: 'Ver en web'
               },
             ].map((repo, idx) => (
               <a
@@ -1141,7 +1145,7 @@ const ProjectDocs = () => {
                   <span className="font-semibold">Stack:</span> {repo.tech}
                 </p>
                 <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-blue-600 group-hover:text-blue-700">
-                  Ver repositorio
+                  {repo.action}
                   <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                 </span>
               </a>

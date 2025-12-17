@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MapPin, Calendar as CalendarIcon, Clock, CheckCircle, Users, AlertCircle, History, CalendarDays } from 'lucide-react';
 import TeacherService from '../../services/teacher.service';
-import LoadingSpinner from '../../components/shared/LoadingSpinner';
-import ErrorMessage from '../../components/shared/ErrorMessage';
+import LoadingSpinner from '../../components/shared/layout/LoadingSpinner';
+import ErrorMessage from '../../components/shared/layout/ErrorMessage';
 import { DAYS, ACADEMIC_HOURS } from '../../utils/constants';
 
 const RoomReservation = () => {

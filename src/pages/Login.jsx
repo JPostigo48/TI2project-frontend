@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
@@ -6,12 +6,20 @@ import { users } from '../mocks/auth.mock';
 import { ROUTES } from '../utils/constants';
 
 const Login = () => {
+  const { user, redirectByRole } = useAuth();
+
   const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  useEffect(() => {
+    if (!loading && user) {
+      redirectByRole(user.role);
+    }
+  }, [loading, user, redirectByRole]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
