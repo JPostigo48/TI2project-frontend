@@ -17,7 +17,7 @@ const ENDPOINTS = {
     ATTENDANCE_LIST: '/attendance',
     SUBMIT_ATTENDANCE: '/attendance',
     GRADES: '/grades',
-    UPDATE_GRADE: '/grades',
+    UPDATE_GRADE: '/grades/update',
     ROOMS: '/rooms',
     RESERVE_ROOM: '/rooms/reserve',
     ROOM_RESERVATIONS: '/rooms/reservations',
