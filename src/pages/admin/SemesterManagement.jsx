@@ -5,6 +5,7 @@ import ENDPOINTS from '../../api/endpoints';
 import SemestersPanel from '../../components/shared/semesters/SemestersPanel';
 import CoursesPanel from '../../components/shared/courses/CoursesPanel';
 import { formatDateUTC } from '../../utils/helpers';
+import LabResultsModal from '../../components/admin/LabsResultsModal';
 
 // Mapea estado de formulario a color de fondo
 const getFormBgClass = (status) => {
@@ -304,6 +305,10 @@ const SemesterManagement = () => {
     }
   };
 
+  const [labResultsOpen, setLabResultsOpen] = useState(false);
+  const [labResults, setLabResults] = useState([]);
+  const [labResultsSemester, setLabResultsSemester] = useState(null);
+
   const handleViewLabsResults = async (semester) => {
     if (!semester?._id) return;
 
@@ -315,17 +320,21 @@ const SemesterManagement = () => {
         ENDPOINTS.COMMON.SEMESTER_LAB_RESULTS(semester._id)
       );
 
-      console.log('Resultados:', res.data);
-      setLabSuccess(
-        `Resultados cargados para ${semester.name}. (Revisar consola)`
-      );
+      setLabResults(Array.isArray(res.data) ? res.data : []);
+      setLabResultsSemester(semester);
+      setLabResultsOpen(true);
+
+      setLabSuccess(`Resultados cargados para ${semester.name}.`);
     } catch (err) {
       const msg =
         err.response?.data?.message ||
         'Error al obtener los resultados de laboratorios.';
       setLabError(msg);
+    } finally {
+      setLabActionStatus('idle');
     }
   };
+
 
   // ====== HANDLERS: CURSOS ======
   const handleCourseInputChange = (e) => {
@@ -383,6 +392,15 @@ const SemesterManagement = () => {
           <span className="text-xs text-gray-500">Actualizando semestres...</span>
         )}
       </div>
+
+      
+
+      <LabResultsModal
+        open={labResultsOpen}
+        onClose={() => setLabResultsOpen(false)}
+        results={labResults}
+        semesterName={labResultsSemester?.name}
+      />
 
       <div className="space-y-6">
         {/* PANEL: Semestres */}

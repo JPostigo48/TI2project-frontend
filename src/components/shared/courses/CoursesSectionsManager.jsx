@@ -1,26 +1,29 @@
-import React, { useState } from 'react';
-import axiosClient from '../../../api/axiosClient';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useMemo } from 'react';
 import NewGroupCard from './NewGroupCard';
 import EditSectionForm from './EditSectionForm';
 import SectionsTable from './SectionsTable';
-import ENDPOINTS from '../../../api/endpoints';
 import LoadingSpinner from '../layout/LoadingSpinner';
 import ErrorMessage from '../layout/ErrorMessage';
 import StatusCard from '../common/StatusCard';
 import EditCourseCard from './EditCourseCard';
+import axiosClient from '../../../api/axiosClient';
+import ENDPOINTS from '../../../api/endpoints';
 
 const CourseSectionsManager = ({
   course,
   semesterId,
   teachers = [],
   rooms = [],
+  sections = [],
+  isLoading = false,
+  error = null,
+  refetchSections, // callback del padre para refrescar
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [creatingGroup, setCreatingGroup] = useState(false);
   const [showGroupForm, setShowGroupForm] = useState(false);
 
-  const [groupFormStatus, setGroupFormStatus] = useState('idle');   // idle | editing | success | error
+  const [groupFormStatus, setGroupFormStatus] = useState('idle');
   const [groupFormMessage, setGroupFormMessage] = useState('');
 
   const [editFormStatus, setEditFormStatus] = useState('idle');
@@ -31,9 +34,7 @@ const CourseSectionsManager = ({
     group: '',
     capacity: '',
     teacher: '',
-    schedules: [
-      { dayOfWeek: '', startBlock: '', endBlock: '', room: '' },
-    ],
+    schedules: [{ dayOfWeek: '', startBlock: '', endBlock: '', room: '' }],
   });
 
   const [editingSection, setEditingSection] = useState(null);
@@ -45,28 +46,17 @@ const CourseSectionsManager = ({
     schedules: [],
   });
 
-  // para el toggle de filas de horario
   const [openScheduleSectionId, setOpenScheduleSectionId] = useState(null);
-
   const [isEditingCourse, setIsEditingCourse] = useState(false);
 
-  const {
-    data: sections = [],
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ['courseSections', course._id, semesterId],
-    queryFn: async () => {
-      if (!semesterId) return [];
-      const res = await axiosClient.get(ENDPOINTS.ADMIN.SECTIONS_IN_COURSE(course._id), {
-        params: { semester: semesterId },
-      });
-      return res.data;
-    },
-    enabled: expanded && !!semesterId,
-    staleTime: 1000 * 60 * 2,
-  });
+  // ✅ Map room.code -> room._id para enviar ObjectId
+  const roomIdByCode = useMemo(() => {
+    const m = new Map();
+    (rooms || []).forEach((r) => {
+      if (r?.code && r?._id) m.set(r.code, r._id);
+    });
+    return m;
+  }, [rooms]);
 
   const handleGroupInputChange = (e) => {
     const { name, value } = e.target;
@@ -102,29 +92,27 @@ const CourseSectionsManager = ({
 
     if (validSchedules.length === 0) {
       setGroupFormStatus('error');
-      setGroupFormMessage(
-        'Agrega al menos un horario completo (día, inicio, fin y aula).'
-      );
+      setGroupFormMessage('Agrega al menos un horario completo.');
       return;
     }
 
     const schedulePayload = [];
-
     for (const s of validSchedules) {
       const startBlockNum = Number(s.startBlock);
       const endBlockNum = Number(s.endBlock);
-
       if (endBlockNum < startBlockNum) {
         setGroupFormStatus('error');
         setGroupFormMessage('El bloque fin no puede ser menor que el inicio.');
         return;
       }
 
+      const roomId = roomIdByCode.get(s.room) || s.room; // code -> id
+
       schedulePayload.push({
         day: s.dayOfWeek,
         startHour: startBlockNum,
         duration: endBlockNum - startBlockNum + 1,
-        room: s.room || null,
+        room: roomId || null,
       });
     }
 
@@ -145,24 +133,20 @@ const CourseSectionsManager = ({
         group: '',
         capacity: '',
         teacher: '',
-        schedules: [
-          { dayOfWeek: '', startBlock: '', endBlock: '', room: '' },
-        ],
+        schedules: [{ dayOfWeek: '', startBlock: '', endBlock: '', room: '' }],
       });
       setGroupFormStatus('success');
       setGroupFormMessage('Grupo creado correctamente.');
       setShowGroupForm(false);
-      await refetch();
+
+      await refetchSections?.();
     } catch (err) {
       setGroupFormStatus('error');
-      setGroupFormMessage(
-        err.response?.data?.message || 'Error al crear grupo'
-      );
+      setGroupFormMessage(err.response?.data?.message || 'Error al crear grupo');
     } finally {
       setCreatingGroup(false);
     }
   };
-
 
   const startEditingSection = (section) => {
     setEditingSection(section);
@@ -170,14 +154,17 @@ const CourseSectionsManager = ({
     const schedules = (section.schedule || []).map((block) => {
       const startBlock = block.startHour;
       const endBlock = block.startHour + (block.duration || 1) - 1;
+
+      const roomValue =
+        typeof block.room === 'object'
+          ? (block.room.code || block.room._id || '')
+          : (block.room || '');
+
       return {
         dayOfWeek: block.day,
         startBlock: String(startBlock),
         endBlock: String(endBlock),
-        room:
-          block.room?._id ||
-          block.room || 
-          '',
+        room: roomValue,
       };
     });
 
@@ -185,11 +172,10 @@ const CourseSectionsManager = ({
       type: section.type || 'theory',
       group: section.group || '',
       capacity: section.capacity ?? '',
-      teacher: section.teacher?._id || '',
+      teacher: section.teacher?._id || section.teacher || '',
       schedules: schedules.length ? schedules : [{ dayOfWeek: '', startBlock: '', endBlock: '', room: '' }],
     });
   };
-
 
   const handleEditSectionChange = (e) => {
     const { name, value } = e.target;
@@ -210,7 +196,6 @@ const CourseSectionsManager = ({
       setEditFormMessage('El grupo debe tener un nombre.');
       return;
     }
-
     if (!editSectionForm.teacher) {
       setEditFormStatus('error');
       setEditFormMessage('Selecciona un docente.');
@@ -220,32 +205,29 @@ const CourseSectionsManager = ({
     const validSchedules = (editSectionForm.schedules || []).filter(
       (s) => s.dayOfWeek && s.startBlock && s.endBlock && s.room
     );
-
     if (validSchedules.length === 0) {
       setEditFormStatus('error');
-      setEditFormMessage(
-        'Agrega al menos un horario completo (día, inicio, fin y aula).'
-      );
+      setEditFormMessage('Agrega al menos un horario completo.');
       return;
     }
 
     const schedulePayload = [];
-
     for (const s of validSchedules) {
       const startBlockNum = Number(s.startBlock);
       const endBlockNum = Number(s.endBlock);
-
       if (endBlockNum < startBlockNum) {
         setEditFormStatus('error');
         setEditFormMessage('El bloque fin no puede ser menor que el inicio.');
         return;
       }
 
+      const roomId = roomIdByCode.get(s.room) || s.room;
+
       schedulePayload.push({
         day: s.dayOfWeek,
         startHour: startBlockNum,
         duration: endBlockNum - startBlockNum + 1,
-        room: s.room || null,
+        room: roomId || null,
       });
     }
 
@@ -253,9 +235,7 @@ const CourseSectionsManager = ({
       await axiosClient.post(ENDPOINTS.COMMON.COURSE_EDIT(editingSection._id), {
         type: editSectionForm.type,
         group: editSectionForm.group.trim(),
-        capacity: editSectionForm.capacity
-          ? Number(editSectionForm.capacity)
-          : 0,
+        capacity: editSectionForm.capacity ? Number(editSectionForm.capacity) : 0,
         teacher: editSectionForm.teacher,
         schedule: schedulePayload,
       });
@@ -263,25 +243,36 @@ const CourseSectionsManager = ({
       setEditFormStatus('success');
       setEditFormMessage('Grupo actualizado correctamente.');
       setEditingSection(null);
-      await refetch();
+
+      await refetchSections?.();
     } catch (error) {
       setEditFormStatus('error');
-      setEditFormMessage(
-        `Error al actualizar grupo${error.message ? ': '+error.message : ''}`
-      );
+      setEditFormMessage(`Error al actualizar grupo${error?.message ? ': ' + error.message : ''}`);
     }
   };
 
   const toggleScheduleRow = (sectionId) => {
-    setOpenScheduleSectionId((prev) =>
-      prev === sectionId ? null : sectionId
-    );
+    setOpenScheduleSectionId((prev) => (prev === sectionId ? null : sectionId));
   };
 
   const firstLineMeta = [];
   if (course.year) firstLineMeta.push(`Año ${course.year}`);
   if (course.semester) firstLineMeta.push(`Ciclo ${course.semester}`);
   if (course.credits) firstLineMeta.push(`${course.credits} créditos`);
+
+  if (!sections?.length) {
+    return (
+      <div className="border rounded-lg p-3 bg-white shadow-sm">
+        <p className="font-semibold text-gray-900">
+          {course.code} — {course.name}
+        </p>
+        <p className="text-xs text-gray-500 mt-1">
+          Sin secciones registradas para este semestre.
+        </p>
+      </div>
+    );
+  }
+
 
   return (
     <div className="border rounded-lg p-3 bg-white shadow-sm">
@@ -291,11 +282,10 @@ const CourseSectionsManager = ({
             {course.code} — {course.name}
           </p>
           {firstLineMeta.length > 0 && (
-            <p className="text-xs text-gray-500 mt-1">
-              {firstLineMeta.join(' · ')}
-            </p>
+            <p className="text-xs text-gray-500 mt-1">{firstLineMeta.join(' · ')}</p>
           )}
         </div>
+
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -304,6 +294,7 @@ const CourseSectionsManager = ({
           >
             Editar curso
           </button>
+
           <button
             type="button"
             onClick={() => setExpanded((prev) => !prev)}
@@ -316,12 +307,8 @@ const CourseSectionsManager = ({
       </div>
 
       {isEditingCourse && (
-        <EditCourseCard
-          course={course}
-          onClose={() => setIsEditingCourse(null)}
-        />
+        <EditCourseCard course={course} onClose={() => setIsEditingCourse(null)} />
       )}
-
 
       {expanded && (
         <div className="mt-3 border-t border-gray-100 pt-3 space-y-3">
@@ -353,18 +340,10 @@ const CourseSectionsManager = ({
                     }}
                     onSubmit={handleSaveSection}
                   />
+
                   {editFormMessage && (
-                    // <p
-                    //   className={`mt-1 text-xs ${
-                    //     editFormStatus === 'error'
-                    //       ? 'text-red-700'
-                    //       : 'text-green-700'
-                    //   }`}
-                    // >
-                    //   {editFormMessage}
-                    // </p>
-                    <div className='mt-3'>
-                      <ErrorMessage message={editFormMessage}/>
+                    <div className="mt-3">
+                      <ErrorMessage message={editFormMessage} />
                     </div>
                   )}
                 </StatusCard>
@@ -404,7 +383,6 @@ const CourseSectionsManager = ({
           </StatusCard>
         </div>
       )}
-
     </div>
   );
 };

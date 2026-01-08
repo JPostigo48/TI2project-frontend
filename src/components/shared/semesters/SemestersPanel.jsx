@@ -3,6 +3,7 @@ import ErrorMessage from '../layout/ErrorMessage';
 import LoadingSpinner from '../layout/LoadingSpinner';
 import NewSemesterCard from './NewSemesterCard';
 import SemesterItem from './SemesterItem';
+import LabResultsModal from '../../admin/LabsResultsModal';
 
 const SemestersPanel = ({
   semesters,
@@ -53,6 +54,7 @@ const SemestersPanel = ({
   return (
     <div className="bg-white p-4 shadow rounded space-y-4">
       <h2 className="text-lg font-semibold">Semestres académicos</h2>
+
 
       {/* Lista de semestres */}
       <ul className="space-y-3">
